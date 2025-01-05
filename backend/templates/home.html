@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Tour Eye</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <header>
+        <img src="{{ url_for('static', filename='images/banner_frontpage.jpg') }}" alt="Tour Eye Banner" class="banner">
+    </header>
+
+    <div class="main-content">
+        <!-- Sidebar starts below the banner -->
+        <div class="sidebar">
+            <nav>
+                <ul>
+                    <li><a href="#about-us">About Us</a></li>
+                    <li class="dropdown">
+                        <a href="#">Movies & Entertainment</a>
+                        <ul class="dropdown-menu">
+                            <li><a href="{{ url_for('movies') }}">Movies</a></li>
+                            <li><a href="/tv-shows">TV Shows</a></li>
+                            <li><a href="/documentaries">Documentaries</a></li>
+                            <li><a href="/music">Music</a></li>
+                            <li><a href="/magazines">Magazines</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="/navigation">Navigation</a></li>
+                </ul>
+            </nav>
+        </div>
+
+        <!-- Intro section with centered square-tiled collage -->
+        <section class="intro">
+            <div class="intro-collage">
+                <img src="{{ url_for('static', filename='images/train_frontpage.jpg') }}" alt="Train Image" class="intro-image">
+                <img src="{{ url_for('static', filename='images/mama_president.jpg') }}" alt="President Image" class="intro-image">
+            </div>
+            <h1>Welcome to Tour Eye</h1>
+            <p>Your own railway entertainment system</p>
+        </section>
+
+        <!-- Categories as a 3x2 grid with shadow-pocketed images -->
+        <section class="categories">
+            <div class="category-grid">
+                <a href="{{ url_for('movies') }}" class="category-tile">
+                    <img src="{{ url_for('static', filename='images/movies_tile.jpg') }}" alt="Movies">
+                    <h2>Movies</h2>
+                </a>
+                <a href="/tv-shows" class="category-tile">
+                    <img src="{{ url_for('static', filename='images/tvshows_tile.jpg') }}" alt="TV Shows">
+                    <h2>TV Shows</h2>
+                </a>
+                <a href="/documentaries" class="category-tile">
+                    <img src="{{ url_for('static', filename='images/documentaries_tile.jpg') }}" alt="Documentaries">
+                    <h2>Documentaries</h2>
+                </a>
+                <a href="/music" class="category-tile">
+                    <img src="{{ url_for('static', filename='images/music_tile.jpg') }}" alt="Music">
+                    <h2>Music</h2>
+                </a>
+                <a href="/magazines" class="category-tile">
+                    <img src="{{ url_for('static', filename='images/magazines_tile.jpg') }}" alt="Magazines">
+                    <h2>Magazines</h2>
+                </a>
+                <a href="/navigation" class="category-tile">
+                    <img src="{{ url_for('static', filename='images/navigation_tile.jpg') }}" alt="Navigation">
+                    <h2>Navigation</h2>
+                </a>
+            </div>
+        </section>
+    </div>
+</body>
+</html>

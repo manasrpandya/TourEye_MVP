@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PNR Validation</title>
+</head>
+<body>
+    <h1>Enter Your PNR</h1>
+    <form action="/validate_pnr" method="POST">
+        <label for="pnr">PNR Number:</label>
+        <input type="text" id="pnr" name="pnr" maxlength="10" required>
+        <button type="submit">Validate</button>
+    </form>
+</body>
+</html>

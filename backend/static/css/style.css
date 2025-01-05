@@ -1,0 +1,228 @@
+/* General Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #f0f4f8;
+    color: #333;
+    line-height: 1.6;
+}
+
+/* Header Styles */
+header {
+    background-color: #222;
+    color: #fff;
+    padding: 20px 0;
+    text-align: center;
+    position: relative;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+header .logo-container img {
+    height: 50px;
+    vertical-align: middle;
+}
+
+header .title-container h1 {
+    font-size: 2.5em;
+    font-weight: bold;
+    margin: 10px 0;
+}
+
+header .title-container h2 {
+    font-size: 1.2em;
+    font-weight: 300;
+    color: #bbb;
+}
+
+/* Sidebar Styles */
+.sidebar {
+    background-color: #fff;
+    padding: 20px;
+    border-right: 2px solid #ddd;
+    height: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 20%;
+    overflow-y: auto;
+    box-shadow: 2px 0 6px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar nav ul {
+    list-style: none;
+    padding: 0;
+}
+
+.sidebar nav ul li {
+    margin: 15px 0;
+}
+
+.sidebar nav ul li a {
+    text-decoration: none;
+    color: #007BFF;
+    font-size: 1.1em;
+    font-weight: bold;
+    transition: color 0.3s;
+}
+
+.sidebar nav ul li a:hover {
+    color: #0056b3;
+}
+
+.sidebar nav ul li a.active {
+    color: #0056b3;
+    text-decoration: underline;
+}
+
+/* Main Content Styles */
+.intro-image {
+    /* Add the following to ensure images are of equal size */
+    width: 10%;          /* Makes images take up the full width of their container */
+    height: auto;         /* Maintains the aspect ratio of the images */
+    object-fit: cover;    /* Ensures the image covers the container without distortion */
+}
+.main-content {
+    margin-left: 22%;
+    padding: 20px;
+    background-color: #f9f9f9;
+    min-height: 100vh;
+}
+
+/* Movie List */
+.movie-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+}
+
+.movie-tile {
+    background-color: #fff;
+    width: 200px;
+    border-radius: 15px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.movie-tile:hover {
+    transform: translateY(-5px);
+    box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+.movie-tile img {
+    width: 100%;
+    height: auto;
+    border-bottom: 2px solid #ddd;
+}
+
+.movie-info {
+    padding: 10px;
+    text-align: center;
+}
+
+.movie-info h3 {
+    font-size: 1.2em;
+    color: #222;
+    margin-bottom: 5px;
+}
+
+.movie-info p {
+    font-size: 0.9em;
+    color: #555;
+}
+
+/* Movie Details Page */
+.movie-details {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    max-width: 800px;
+    margin: auto;
+}
+
+.movie-details .movie-info {
+    margin-bottom: 20px;
+}
+
+.movie-details p {
+    margin-bottom: 10px;
+    color: #444;
+}
+
+.movie-details .video-container video {
+    width: 100%;
+    border-radius: 10px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+}
+/* Updated category-tile class */
+.category-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* Creates three equal columns */
+    gap: 20px; /* Spacing between the tiles */
+    justify-items: center; /* Center align the tiles horizontally */
+    align-items: center; /* Center align the tiles vertically */
+}
+.category-tile {
+    display: block;              /* Makes the entire tile clickable */
+    width: 100%;                 /* Ensures the tile fills the space of the grid */
+    text-align: center;          /* Center-aligns the text within the tile */
+    background-color: #fff;      /* White background */
+    border-radius: 15px;         /* Rounded corners */
+    overflow: hidden;            /* Prevents overflow, ensures rounded corners are clean */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Adds a shadow around the tile */
+    transition: transform 0.3s, box-shadow 0.3s; /* Smooth transition on hover */
+}
+
+.category-tile:hover {
+    transform: translateY(-5px); /* Slightly lifts the tile when hovered */
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2); /* Increases shadow on hover */
+}
+
+.category-tile img {
+    width: 100%;                 /* Makes the image fill the width of the tile */
+    height: auto;                /* Maintains aspect ratio of the image */
+    object-fit: cover;           /* Ensures the image fills the space properly */
+    border-top-left-radius: 15px; /* Rounds the top-left corner of the image */
+    border-top-right-radius: 15px; /* Rounds the top-right corner of the image */
+}
+
+.category-tile h2 {
+    padding: 10px 0;             /* Adds spacing above and below the text */
+    font-size: 1.2em;            /* Slightly larger text for category name */
+    color: #333;                 /* Dark text color */
+    font-weight: bold;           /* Makes the text bold */
+    text-transform: uppercase;   /* Uppercase text for consistency */
+    background-color: #f9f9f9;   /* Light background for the text area */
+    border-bottom-left-radius: 15px; /* Rounds the bottom-left corner */
+    border-bottom-right-radius: 15px; /* Rounds the bottom-right corner */
+}
+
+
+/* Footer */
+footer {
+    background-color: #222;
+    color: #fff;
+    text-align: center;
+    padding: 15px 0;
+    font-size: 0.9em;
+    position: relative;
+    box-shadow: 0px -2px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Utility Classes */
+a {
+    text-decoration: none;
+    color: inherit;
+    transition: color 0.3s;
+}
+
+a:hover {
+    color: #0056b3;
+}

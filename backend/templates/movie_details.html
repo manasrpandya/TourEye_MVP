@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ movie.name }} - Movie Details</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <header>
+        <div class="logo-container">
+            <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="Tour Eye Logo" class="logo">
+        </div>
+        <div class="title-container">
+            <h1>{{ movie.name }}</h1>
+            <h2>{{ movie.year }} | Rating: {{ movie.rating }}</h2>
+        </div>
+    </header>
+
+    <div class="main-content">
+        <aside class="sidebar">
+            <nav>
+                <ul>
+                    <li><a href="{{ url_for('movies') }}">Movies</a></li>
+                    <li><a href="/tv-shows">TV Shows</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <section class="movie-details">
+            <div class="movie-info">
+                <p><strong>Description:</strong> {{ movie.description }}</p>
+            </div>
+
+            {% if movie.video %}
+            <div class="video-container">
+                <video controls>
+                    <source src="{{ movie.video }}" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+            {% else %}
+            <p class="no-video">Video is not available yet. Please check back later!</p>
+            {% endif %}
+        </section>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 Tour Eye Entertainment | All Rights Reserved</p>
+    </footer>
+</body>
+</html>

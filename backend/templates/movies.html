@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movies</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <header>
+        <div class="logo-container">
+            <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="Tour Eye Logo" class="logo">
+        </div>
+        <div class="title-container">
+            <h1>Tour Eye</h1>
+            <h2>Your Gateway to Entertainment</h2>
+        </div>
+    </header>
+
+    <div class="main-content">
+        <aside class="sidebar">
+            <nav>
+                <ul>
+                    <li><a href="{{ url_for('home') }}">Home</a></li>
+                    <li><a href="{{ url_for('movies') }}" class="active">Movies</a></li>
+                    <li><a href="/tv-shows">TV Shows</a></li>
+                    <li><a href="/about-us">About Us</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <section class="movie-list">
+            {% for movie in movies %}
+            <div class="movie-tile">
+                <a href="{{ url_for('movie_details', movie_folder=movie.folder) }}">
+                    <img src="{{ movie.cover }}" alt="{{ movie.name }}">
+                    <div class="movie-info">
+                        <h3>{{ movie.name }}</h3>
+                        <p>Rating: {{ movie.rating }}</p>
+                        <p>Year: {{ movie.year }}</p>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </section>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 Tour Eye Entertainment | All Rights Reserved</p>
+    </footer>
+</body>
+</html>
