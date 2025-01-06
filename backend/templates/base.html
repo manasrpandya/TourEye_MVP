@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TourEye - {% block title %}{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#0f172a',
+                        secondary: '#1e293b',
+                        accent: '#ef4444',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        html, body {
+            background-color: #0f172a;
+            min-height: 100vh;
+            overflow-x: hidden;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            display: flex;
+            flex-direction: column;
+        }
+        main {
+            flex: 1 0 auto;
+        }
+        .content-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            width: 100%;
+        }
+        @media (min-width: 640px) {
+            .content-container {
+                padding: 0 1.5rem;
+            }
+        }
+        @media (min-width: 1024px) {
+            .content-container {
+                padding: 0 2rem;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-primary to-secondary text-gray-100">
+    <!-- Navigation -->
+    <nav class="bg-secondary/80 backdrop-blur-sm sticky top-0 z-50 border-b border-gray-800">
+        <div class="content-container">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo and Main Nav -->
+                <div class="flex items-center gap-8">
+                    <a href="/" class="text-2xl font-bold text-white hover:text-accent transition-colors">
+                        TourEye
+                    </a>
+                    <div class="hidden md:flex items-center gap-4">
+                        <a href="/" class="px-3 py-2 rounded-md text-sm font-medium hover:text-accent transition-colors">
+                            Home
+                        </a>
+                        <a href="/movies" class="px-3 py-2 rounded-md text-sm font-medium hover:text-accent transition-colors">
+                            Movies
+                        </a>
+                        <div class="relative group">
+                            <button class="px-3 py-2 rounded-md text-sm font-medium hover:text-accent transition-colors">
+                                Genres
+                                <i class="fas fa-chevron-down ml-1 text-xs"></i>
+                            </button>
+                            <div class="absolute left-0 z-50 hidden group-hover:block w-48 mt-1">
+                                <div class="bg-secondary rounded-lg shadow-xl border border-gray-800 py-1">
+                                    <div id="genresList" class="py-1">
+                                        <!-- Genres populated by JavaScript -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Search Bar -->
+                <div class="flex-1 max-w-lg px-8">
+                    <form id="searchForm" class="relative">
+                        <input type="search" id="searchInput" 
+                            class="w-full bg-gray-900/50 rounded-full pl-4 pr-10 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent/50 border border-gray-800" 
+                            placeholder="Search movies...">
+                        <button type="submit" class="absolute right-0 top-0 mt-2 mr-4">
+                            <i class="fas fa-search text-gray-400 hover:text-accent transition-colors"></i>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden">
+                    <button type="button" class="text-gray-400 hover:text-white">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main>
+        <div class="content-container py-8">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-secondary/80 backdrop-blur-sm border-t border-gray-800 py-6 mt-auto">
+        <div class="content-container">
+            <div class="text-center text-sm text-gray-400">
+                <p>&copy; 2024 TourEye Entertainment. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Fetch and populate genres dropdown
+        fetch('/api/genres')
+            .then(response => response.json())
+            .then(genres => {
+                const genresList = document.getElementById('genresList');
+                genres.forEach(genre => {
+                    const a = document.createElement('a');
+                    a.href = `/movies?genre=${encodeURIComponent(genre.name)}`;
+                    a.className = 'block px-4 py-2 text-sm text-gray-300 hover:bg-accent hover:text-white transition-colors';
+                    a.textContent = genre.name;
+                    genresList.appendChild(a);
+                });
+            });
+
+        // Handle search form submission
+        document.getElementById('searchForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const query = document.getElementById('searchInput').value.trim();
+            if (query) {
+                window.location.href = `/movies?search=${encodeURIComponent(query)}`;
+            }
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

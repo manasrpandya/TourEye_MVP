@@ -1,97 +1,54 @@
-from flask import Flask, render_template, send_from_directory, abort
-import os
+from flask import Flask, render_template, request, jsonify
+from services.tmdb_service import TMDBService
 
 app = Flask(__name__)
-
-# Paths
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-MOVIES_DIR = os.path.join(BASE_DIR, "../data/movies")  # Movies directory
-STATIC_DIR = os.path.join(BASE_DIR, "static")
+tmdb_service = TMDBService()
 
 @app.route('/')
 def home():
-    """
-    Display the homepage with categories and scrolling features.
-    """
-    return render_template("home.html")
+    popular_movies = tmdb_service.get_popular_movies()
+    genres = tmdb_service.get_genres()
+    return render_template('home.html', 
+                         featured_movies=popular_movies[:8], 
+                         genres=genres)
 
 @app.route('/movies')
 def movies():
-    """
-    Display the movies page with tiles of available movies.
-    """
-    movies = []
-    for folder in os.listdir(MOVIES_DIR):
-        folder_path = os.path.join(MOVIES_DIR, folder)
-        if os.path.isdir(folder_path):
-            details_file = os.path.join(folder_path, "details.txt")
-            cover_file = os.path.join(folder_path, "cover.jpg")
-            if os.path.exists(details_file):
-                with open(details_file, 'r') as file:
-                    lines = file.readlines()
-                    if len(lines) >= 4:
-                        movie = {
-                            'name': lines[0].strip(),
-                            'rating': lines[1].strip(),
-                            'year': lines[2].strip(),
-                            'description': lines[3].strip(),
-                            'cover': f'/data/movies/{folder}/cover.jpg' if os.path.exists(cover_file) else '/static/images/placeholder.jpg',
-                            'folder': folder
-                        }
-                        movies.append(movie)
-    return render_template("movies.html", movies=movies)
+    page = request.args.get('page', 1, type=int)
+    genre = request.args.get('genre')
+    search = request.args.get('search')
+    
+    if search:
+        movies = tmdb_service.search_movies(search, page)
+    elif genre:
+        genre_obj = next((g for g in tmdb_service.get_genres() if g.name.lower() == genre.lower()), None)
+        if genre_obj:
+            movies = tmdb_service.get_movies_by_genre(genre_obj.id, page)
+        else:
+            movies = tmdb_service.get_popular_movies(page)
+    else:
+        movies = tmdb_service.get_popular_movies(page)
+    
+    return render_template('movies.html',
+                         movies=movies,
+                         genres=tmdb_service.get_genres(),
+                         current_page=page)
 
-@app.route('/movie/<movie_folder>')
-def movie_details(movie_folder):
-    """
-    Display details and video for a selected movie.
-    """
-    folder_path = os.path.join(MOVIES_DIR, movie_folder)
-    details_file = os.path.join(folder_path, "details.txt")
-    video_file = None
+@app.route('/movie/<int:movie_id>')
+def movie_details(movie_id):
+    movie = tmdb_service.get_movie_details(movie_id)
+    similar_movies = tmdb_service.get_similar_movies(movie_id)
+    credits = tmdb_service.get_movie_credits(movie_id)
+    
+    return render_template('movie_details.html',
+                         movie=movie,
+                         similar_movies=similar_movies[:4],
+                         credits=credits)
 
-    # Look for the video file
-    for file in os.listdir(folder_path):
-        if file.endswith(('.mp4', '.mkv', '.avi')):
-            video_file = file
-            break
-
-    if not os.path.exists(details_file) or not video_file:
-        abort(404)
-
-    with open(details_file, 'r') as file:
-        lines = file.readlines()
-        if len(lines) < 4:
-            abort(404)
-        movie = {
-            'name': lines[0].strip(),
-            'rating': lines[1].strip(),
-            'year': lines[2].strip(),
-            'description': lines[3].strip(),
-            'video': f'/data/movies/{movie_folder}/{video_file}'
-        }
-    return render_template("movie_details.html", movie=movie)
-
-@app.route('/data/movies/<path:filename>')
-def serve_movie_files(filename):
-    """
-    Serve movie-related files (e.g., videos, covers) from the movies directory.
-    """
-    return send_from_directory(MOVIES_DIR, filename)
-
-@app.route('/static/<path:filename>')
-def serve_static_files(filename):
-    """
-    Serve static assets such as CSS and images.
-    """
-    return send_from_directory(STATIC_DIR, filename)
-
-@app.errorhandler(404)
-def not_found(e):
-    """
-    Render a 404 error page when a resource is not found.
-    """
-    return render_template('error.html'), 404
+@app.route('/api/genres')
+def get_genres():
+    genres = tmdb_service.get_genres()
+    return jsonify([{'id': genre.id, 'name': genre.name} for genre in genres])
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0')
+    app.run(debug=True, host='0.0.0.0', port=5000)

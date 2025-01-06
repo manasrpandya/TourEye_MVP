@@ -1,52 +1,156 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ movie.name }} - Movie Details</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-</head>
-<body>
-    <header>
-        <div class="logo-container">
-            <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="Tour Eye Logo" class="logo">
-        </div>
-        <div class="title-container">
-            <h1>{{ movie.name }}</h1>
-            <h2>{{ movie.year }} | Rating: {{ movie.rating }}</h2>
-        </div>
-    </header>
+{% extends "base.html" %}
 
-    <div class="main-content">
-        <aside class="sidebar">
-            <nav>
-                <ul>
-                    <li><a href="{{ url_for('movies') }}">Movies</a></li>
-                    <li><a href="/tv-shows">TV Shows</a></li>
-                </ul>
-            </nav>
-        </aside>
+{% block title %}{{ movie.title }}{% endblock %}
 
-        <section class="movie-details">
-            <div class="movie-info">
-                <p><strong>Description:</strong> {{ movie.description }}</p>
-            </div>
-
-            {% if movie.video %}
-            <div class="video-container">
-                <video controls>
-                    <source src="{{ movie.video }}" type="video/mp4">
-                    Your browser does not support the video tag.
-                </video>
-            </div>
-            {% else %}
-            <p class="no-video">Video is not available yet. Please check back later!</p>
-            {% endif %}
-        </section>
+{% block content %}
+<!-- Movie Hero Section -->
+<div class="relative -mt-8 mb-8">
+    <!-- Backdrop Image -->
+    <div class="absolute inset-0">
+        <img src="{{ movie.backdrop_path }}" 
+             alt="{{ movie.title }} backdrop" 
+             class="w-full h-[600px] object-cover">
+        <div class="absolute inset-0 bg-gradient-to-t from-primary via-primary/80 to-transparent"></div>
     </div>
 
-    <footer>
-        <p>&copy; 2024 Tour Eye Entertainment | All Rights Reserved</p>
-    </footer>
-</body>
-</html>
+    <!-- Movie Content -->
+    <div class="relative content-container pt-32 pb-16">
+        <div class="flex flex-col md:flex-row gap-8">
+            <!-- Poster -->
+            <div class="w-full md:w-1/3 lg:w-1/4">
+                <img src="{{ movie.poster_path }}" 
+                     alt="{{ movie.title }}" 
+                     class="w-full rounded-lg shadow-2xl">
+            </div>
+
+            <!-- Details -->
+            <div class="flex-1">
+                <h1 class="text-4xl font-bold mb-4">{{ movie.title }}</h1>
+                
+                <!-- Movie Meta -->
+                <div class="flex items-center gap-4 text-sm text-gray-300 mb-6">
+                    <span>{{ movie.release_date[:4] }}</span>
+                    <span class="flex items-center">
+                        <i class="fas fa-star text-yellow-400 mr-1"></i>
+                        {{ "%.1f"|format(movie.vote_average) }}
+                    </span>
+                    <div class="flex gap-2">
+                        {% for genre in movie.genres %}
+                        <span class="px-2 py-1 bg-secondary rounded-full text-xs">{{ genre }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Overview -->
+                <p class="text-gray-300 mb-8">{{ movie.overview }}</p>
+
+                <!-- Action Buttons -->
+                <div class="flex gap-4">
+                    {% if movie.trailer_key %}
+                    <button onclick="playTrailer('{{ movie.trailer_key }}')" 
+                            class="flex items-center gap-2 bg-accent hover:bg-red-700 text-white px-6 py-3 rounded-lg transition-colors">
+                        <i class="fas fa-play"></i>
+                        Watch Trailer
+                    </button>
+                    {% endif %}
+                    <button onclick="playMovie('{{ movie.trailer_key }}')"
+                            class="flex items-center gap-2 bg-secondary hover:bg-gray-700 text-white px-6 py-3 rounded-lg transition-colors">
+                        <i class="fas fa-film"></i>
+                        Play Movie
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Similar Movies Section -->
+<section class="mb-16">
+    <h2 class="text-2xl font-bold mb-6">More Like This</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        {% for movie in similar_movies %}
+        <a href="/movie/{{ movie.id }}" class="group">
+            <div class="relative bg-secondary rounded-lg overflow-hidden shadow-lg transform hover:scale-105 transition duration-300">
+                <img src="https://image.tmdb.org/t/p/w500{{ movie.poster_path }}" 
+                     alt="{{ movie.title }}" 
+                     class="w-full h-[300px] object-cover">
+                <div class="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <div class="absolute bottom-0 left-0 right-0 p-4">
+                        <h3 class="text-lg font-semibold text-white group-hover:text-accent transition-colors">{{ movie.title }}</h3>
+                        <div class="flex items-center justify-between mt-2">
+                            <div class="flex items-center">
+                                <i class="fas fa-star text-yellow-400 mr-1"></i>
+                                <span class="text-white">{{ "%.1f"|format(movie.vote_average) }}</span>
+                            </div>
+                            <span class="text-gray-300">{{ movie.release_date[:4] }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- Video Modal -->
+<div id="videoModal" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-black/90" onclick="closeVideo()"></div>
+    <div class="relative z-10 w-full h-full flex items-center justify-center p-4">
+        <div class="relative w-full max-w-5xl aspect-video bg-black rounded-lg overflow-hidden">
+            <button onclick="closeVideo()" class="absolute top-4 right-4 text-white hover:text-accent">
+                <i class="fas fa-times text-2xl"></i>
+            </button>
+            <div id="videoPlayer"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://www.youtube.com/iframe_api"></script>
+<script>
+let player;
+
+function playTrailer(videoId) {
+    openVideoModal(videoId);
+}
+
+function playMovie(videoId) {
+    // For simulation here, we'll just play the trailer
+    openVideoModal(videoId);
+}
+
+function openVideoModal(videoId) {
+    document.getElementById('videoModal').classList.remove('hidden');
+    if (player) {
+        player.loadVideoById(videoId);
+    } else {
+        player = new YT.Player('videoPlayer', {
+            height: '100%',
+            width: '100%',
+            videoId: videoId,
+            playerVars: {
+                'autoplay': 1,
+                'controls': 1,
+                'modestbranding': 1,
+                'rel': 0
+            }
+        });
+    }
+}
+
+function closeVideo() {
+    document.getElementById('videoModal').classList.add('hidden');
+    if (player) {
+        player.stopVideo();
+    }
+}
+
+// Close modal with escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeVideo();
+    }
+});
+</script>
+{% endblock %}
