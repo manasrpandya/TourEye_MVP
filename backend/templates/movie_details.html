@@ -25,7 +25,7 @@
 
             <!-- Details -->
             <div class="flex-1">
-                <h1 class="text-4xl font-bold mb-4">{{ movie.title }}</h1>
+                <h1 class="text-4xl text-white font-bold mb-4">{{ movie.title }}</h1>
                 
                 <!-- Movie Meta -->
                 <div class="flex items-center gap-4 text-sm text-gray-300 mb-6">
@@ -36,7 +36,7 @@
                     </span>
                     <div class="flex gap-2">
                         {% for genre in movie.genres %}
-                        <span class="px-2 py-1 bg-secondary rounded-full text-xs">{{ genre }}</span>
+                        <span class="px-2 py-1 bg-gray-800 rounded-full text-xs">{{ genre }}</span>
                         {% endfor %}
                     </div>
                 </div>
@@ -54,7 +54,7 @@
                     </button>
                     {% endif %}
                     <button onclick="playMovie('{{ movie.trailer_key }}')"
-                            class="flex items-center gap-2 bg-secondary hover:bg-gray-700 text-white px-6 py-3 rounded-lg transition-colors">
+                            class="flex items-center gap-2 bg-gray-800 hover:bg-gray-700 text-white px-6 py-3 rounded-lg transition-colors">
                         <i class="fas fa-film"></i>
                         Play Movie
                     </button>
@@ -66,29 +66,45 @@
 
 <!-- Similar Movies Section -->
 <section class="mb-16">
-    <h2 class="text-2xl font-bold mb-6">More Like This</h2>
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {% for movie in similar_movies %}
-        <a href="/movie/{{ movie.id }}" class="group">
-            <div class="relative bg-secondary rounded-lg overflow-hidden shadow-lg transform hover:scale-105 transition duration-300">
-                <img src="https://image.tmdb.org/t/p/w500{{ movie.poster_path }}" 
-                     alt="{{ movie.title }}" 
-                     class="w-full h-[300px] object-cover">
-                <div class="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <div class="absolute bottom-0 left-0 right-0 p-4">
-                        <h3 class="text-lg font-semibold text-white group-hover:text-accent transition-colors">{{ movie.title }}</h3>
-                        <div class="flex items-center justify-between mt-2">
+    <div class="container mx-auto px-4">
+        <h2 class="text-2xl font-bold mb-6 text-gray-900">More Like This</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+            {% for movie in similar_movies %}
+            <div class="movie-card group">
+                <a href="/movie/{{ movie.id }}" class="block relative rounded-lg overflow-hidden shadow-lg bg-white hover:shadow-xl transition-all duration-300">
+                    {% if movie.poster_path %}
+                    <img src="https://image.tmdb.org/t/p/w500{{ movie.poster_path }}" 
+                         alt="{{ movie.title }}"
+                         class="w-full aspect-[2/3] object-cover transform group-hover:scale-105 transition-transform duration-300"
+                         onerror="this.src='{{ url_for('static', filename='images/placeholder.jpg') }}'">
+                    {% else %}
+                    <img src="{{ url_for('static', filename='images/placeholder.jpg') }}" 
+                         alt="{{ movie.title }}"
+                         class="w-full aspect-[2/3] object-cover">
+                    {% endif %}
+                    
+                    <div class="p-4">
+                        <h3 class="text-lg font-semibold text-gray-900 line-clamp-1 group-hover:text-accent transition-colors">
+                            {{ movie.title }}
+                        </h3>
+                        
+                        <div class="flex items-center mt-2 space-x-2">
                             <div class="flex items-center">
                                 <i class="fas fa-star text-yellow-400 mr-1"></i>
-                                <span class="text-white">{{ "%.1f"|format(movie.vote_average) }}</span>
+                                <span class="text-gray-700 font-medium">{{ "%.1f"|format(movie.vote_average) }}</span>
                             </div>
-                            <span class="text-gray-300">{{ movie.release_date[:4] }}</span>
+                            <span class="text-gray-500">•</span>
+                            <span class="text-gray-500">{{ movie.release_date[:4] if movie.release_date else 'N/A' }}</span>
                         </div>
+                        
+                        <p class="mt-2 text-sm text-gray-600 line-clamp-2">
+                            {{ movie.overview if movie.overview else 'No overview available.' }}
+                        </p>
                     </div>
-                </div>
+                </a>
             </div>
-        </a>
-        {% endfor %}
+            {% endfor %}
+        </div>
     </div>
 </section>
 
