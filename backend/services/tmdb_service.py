@@ -1,6 +1,7 @@
 from tmdbv3api import TMDb, Movie, Genre, Discover, TV
 import requests
 import os
+import re
 
 class TMDBService:
     def __init__(self):
@@ -14,18 +15,24 @@ class TMDBService:
         self.tv = TV()
         self.DOCUMENTARY_GENRE_ID = 99
         self.base_url = "https://api.themoviedb.org/3"
+        
+        # Keywords and patterns to filter out inappropriate content
+        self.inappropriate_keywords = [
+            'porn', 'adult', 'xxx', 'erotic', 'sex', 'nude', 'nudity', 
+            'explicit', 'pornographic', 'mature'
+        ]
+        self.inappropriate_pattern = re.compile('|'.join(self.inappropriate_keywords), re.IGNORECASE)
 
     def get_movie_details(self, movie_id):
         try:
             movie = self.movie.details(movie_id)
-            videos = self.movie.videos(movie_id)
-            trailer = None
-            if videos:
-                for video in videos:
-                    if hasattr(video, 'type') and hasattr(video, 'site'):
-                        if video.type == 'Trailer' and video.site == 'YouTube':
-                            trailer = video
-                            break
+            
+            # Check if the content is appropriate
+            if not self._is_appropriate_content({
+                'title': getattr(movie, 'title', ''),
+                'overview': getattr(movie, 'overview', '')
+            }):
+                raise Exception("Content not appropriate")
             
             return {
                 'id': movie.id,
@@ -35,167 +42,640 @@ class TMDBService:
                 'backdrop_path': f"https://image.tmdb.org/t/p/original{movie.backdrop_path}" if movie.backdrop_path else None,
                 'release_date': movie.release_date,
                 'vote_average': movie.vote_average,
-                'genres': [genre.name for genre in movie.genres] if hasattr(movie, 'genres') else [],
-                'trailer_key': trailer.key if trailer else None
+                'genres': [genre.name for genre in movie.genres],
+                'runtime': movie.runtime,
+                'status': movie.status,
+                'tagline': movie.tagline
             }
         except Exception as e:
             print(f"Error in get_movie_details: {e}")
             raise
 
+    def get_movies(self, page=1):
+        try:
+            url = f"{self.base_url}/discover/movie"
+            params = {
+                'api_key': self.api_key,
+                'sort_by': 'popularity.desc',
+                'page': page,
+                'language': 'en-US',
+                'include_adult': False,  # Explicitly exclude adult content
+                'certification_country': 'US',
+                'certification.lte': 'PG-13'  # Only include up to PG-13 rated content
+            }
+            
+            response = requests.get(url, params=params)
+            if response.status_code != 200:
+                print(f"Error from TMDB API: {response.text}")
+                return []
+            
+            data = response.json()
+            formatted_movies = []
+            
+            for movie in data.get('results', []):
+                try:
+                    # Skip inappropriate content
+                    if not self._is_appropriate_content(movie):
+                        print(f"Filtered out inappropriate movie: {movie.get('title', 'Unknown')}")
+                        continue
+                        
+                    formatted_movie = {
+                        'id': movie.get('id', 0),
+                        'title': movie.get('title', 'Unknown Title'),
+                        'overview': movie.get('overview', 'No overview available'),
+                        'poster_path': f"https://image.tmdb.org/t/p/w500{movie.get('poster_path')}" if movie.get('poster_path') else "/static/images/placeholder.jpg",
+                        'backdrop_path': f"https://image.tmdb.org/t/p/original{movie.get('backdrop_path')}" if movie.get('backdrop_path') else None,
+                        'release_date': movie.get('release_date', 'Unknown'),
+                        'vote_average': movie.get('vote_average', 0.0)
+                    }
+                    formatted_movies.append(formatted_movie)
+                except Exception as e:
+                    print(f"Error formatting movie: {e}")
+                    continue
+            
+            return formatted_movies
+        except Exception as e:
+            print(f"Error fetching movies: {e}")
+            return []
+
+    def get_trending_movies(self):
+        try:
+            url = f"{self.base_url}/trending/movie/week"
+            params = {
+                'api_key': self.api_key,
+                'language': 'en-US',
+                'include_adult': False,
+                'certification_country': 'US',
+                'certification.lte': 'PG-13'
+            }
+            
+            response = requests.get(url, params=params)
+            if response.status_code != 200:
+                print(f"Error from TMDB API: {response.text}")
+                return []
+            
+            data = response.json()
+            formatted_movies = []
+            
+            for movie in data.get('results', [])[:8]:
+                try:
+                    # Skip inappropriate content
+                    if not self._is_appropriate_content(movie):
+                        print(f"Filtered out inappropriate trending movie: {movie.get('title', 'Unknown')}")
+                        continue
+                        
+                    formatted_movie = {
+                        'id': movie.get('id', 0),
+                        'title': movie.get('title', 'Unknown Title'),
+                        'overview': movie.get('overview', 'No overview available'),
+                        'poster_path': f"https://image.tmdb.org/t/p/w500{movie.get('poster_path')}" if movie.get('poster_path') else "/static/images/placeholder.jpg",
+                        'backdrop_path': f"https://image.tmdb.org/t/p/original{movie.get('backdrop_path')}" if movie.get('backdrop_path') else None,
+                        'release_date': movie.get('release_date', 'Unknown'),
+                        'vote_average': movie.get('vote_average', 0.0)
+                    }
+                    formatted_movies.append(formatted_movie)
+                except Exception as e:
+                    print(f"Error formatting trending movie: {e}")
+                    continue
+            
+            return formatted_movies
+        except Exception as e:
+            print(f"Error fetching trending movies: {e}")
+            return []
+
     def get_series_details(self, series_id):
         try:
             series = self.tv.details(series_id)
-            videos = self.tv.videos(series_id)
-            trailer = None
-            if videos:
-                for video in videos:
-                    if hasattr(video, 'type') and hasattr(video, 'site'):
-                        if video.type == 'Trailer' and video.site == 'YouTube':
-                            trailer = video
-                            break
+            
+            # Check if the content is appropriate
+            if not self._is_appropriate_content({
+                'title': getattr(series, 'name', ''),
+                'overview': getattr(series, 'overview', '')
+            }):
+                raise Exception("Content not appropriate")
             
             return {
                 'id': series.id,
-                'name': series.name,
+                'title': series.name,
                 'overview': series.overview,
                 'poster_path': f"https://image.tmdb.org/t/p/w500{series.poster_path}" if series.poster_path else None,
                 'backdrop_path': f"https://image.tmdb.org/t/p/original{series.backdrop_path}" if series.backdrop_path else None,
                 'first_air_date': series.first_air_date,
                 'vote_average': series.vote_average,
-                'number_of_seasons': series.number_of_seasons if hasattr(series, 'number_of_seasons') else 0,
-                'seasons': series.seasons if hasattr(series, 'seasons') else [],
-                'genres': [genre.name for genre in series.genres] if hasattr(series, 'genres') else [],
-                'trailer_key': trailer.key if trailer else None
+                'genres': [genre.name for genre in series.genres],
+                'number_of_seasons': series.number_of_seasons,
+                'status': series.status,
+                'tagline': getattr(series, 'tagline', '')
             }
         except Exception as e:
             print(f"Error in get_series_details: {e}")
             raise
 
-    def get_popular_movies(self, page=1):
-        movies = self.movie.popular(page=page)
-        return [self._format_movie(movie) for movie in movies]
-
-    def get_trending_movies(self):
-        movies = self.movie.popular()
-        return [self._format_movie(movie) for movie in movies][:8]
-
-    def get_popular_series(self, page=1):
-        series = self.tv.popular(page=page)
-        return [self._format_series(show) for show in series]
+    def get_series(self, page=1):
+        try:
+            url = f"{self.base_url}/discover/tv"
+            params = {
+                'api_key': self.api_key,
+                'sort_by': 'popularity.desc',
+                'page': page,
+                'language': 'en-US',
+                'include_adult': False,
+                'certification_country': 'US',
+                'certification.lte': 'TV-PG'  # Using TV-PG rating for series
+            }
+            
+            response = requests.get(url, params=params)
+            if response.status_code != 200:
+                print(f"Error from TMDB API: {response.text}")
+                return []
+            
+            data = response.json()
+            formatted_series = []
+            
+            for series in data.get('results', []):
+                try:
+                    # Skip inappropriate content
+                    if not self._is_appropriate_content({
+                        'title': series.get('name', ''),
+                        'overview': series.get('overview', '')
+                    }):
+                        print(f"Filtered out inappropriate series: {series.get('name', 'Unknown')}")
+                        continue
+                        
+                    formatted_series_item = {
+                        'id': series.get('id', 0),
+                        'title': series.get('name', 'Unknown Title'),
+                        'overview': series.get('overview', 'No overview available'),
+                        'poster_path': f"https://image.tmdb.org/t/p/w500{series.get('poster_path')}" if series.get('poster_path') else "/static/images/placeholder.jpg",
+                        'backdrop_path': f"https://image.tmdb.org/t/p/original{series.get('backdrop_path')}" if series.get('backdrop_path') else None,
+                        'first_air_date': series.get('first_air_date', 'Unknown'),
+                        'vote_average': series.get('vote_average', 0.0)
+                    }
+                    formatted_series.append(formatted_series_item)
+                except Exception as e:
+                    print(f"Error formatting series: {e}")
+                    continue
+            
+            return formatted_series
+        except Exception as e:
+            print(f"Error fetching series: {e}")
+            return []
 
     def get_trending_series(self):
-        series = self.tv.popular()
-        return [self._format_series(show) for show in series][:8]
+        try:
+            url = f"{self.base_url}/trending/tv/week"
+            params = {
+                'api_key': self.api_key,
+                'language': 'en-US',
+                'include_adult': False,
+                'certification_country': 'US',
+                'certification.lte': 'TV-PG'
+            }
+            
+            response = requests.get(url, params=params)
+            if response.status_code != 200:
+                print(f"Error from TMDB API: {response.text}")
+                return []
+            
+            data = response.json()
+            formatted_series = []
+            
+            for series in data.get('results', [])[:8]:
+                try:
+                    # Skip inappropriate content
+                    if not self._is_appropriate_content({
+                        'title': series.get('name', ''),
+                        'overview': series.get('overview', '')
+                    }):
+                        print(f"Filtered out inappropriate trending series: {series.get('name', 'Unknown')}")
+                        continue
+                        
+                    formatted_series_item = {
+                        'id': series.get('id', 0),
+                        'title': series.get('name', 'Unknown Title'),
+                        'overview': series.get('overview', 'No overview available'),
+                        'poster_path': f"https://image.tmdb.org/t/p/w500{series.get('poster_path')}" if series.get('poster_path') else "/static/images/placeholder.jpg",
+                        'backdrop_path': f"https://image.tmdb.org/t/p/original{series.get('backdrop_path')}" if series.get('backdrop_path') else None,
+                        'first_air_date': series.get('first_air_date', 'Unknown'),
+                        'vote_average': series.get('vote_average', 0.0)
+                    }
+                    formatted_series.append(formatted_series_item)
+                except Exception as e:
+                    print(f"Error formatting trending series: {e}")
+                    continue
+            
+            return formatted_series
+        except Exception as e:
+            print(f"Error fetching trending series: {e}")
+            return []
+
+    def get_popular_movies(self, page=1):
+        try:
+            url = f"{self.base_url}/discover/movie"
+            params = {
+                'api_key': self.api_key,
+                'sort_by': 'popularity.desc',
+                'page': page,
+                'language': 'en-US',
+                'include_adult': False,  # Explicitly exclude adult content
+                'certification_country': 'US',
+                'certification.lte': 'PG-13'  # Only include up to PG-13 rated content
+            }
+            
+            response = requests.get(url, params=params)
+            if response.status_code != 200:
+                print(f"Error from TMDB API: {response.text}")
+                return []
+            
+            data = response.json()
+            formatted_movies = []
+            
+            for movie in data.get('results', []):
+                try:
+                    # Skip inappropriate content
+                    if not self._is_appropriate_content(movie):
+                        print(f"Filtered out inappropriate movie: {movie.get('title', 'Unknown')}")
+                        continue
+                        
+                    formatted_movie = {
+                        'id': movie.get('id', 0),
+                        'title': movie.get('title', 'Unknown Title'),
+                        'overview': movie.get('overview', 'No overview available'),
+                        'poster_path': f"https://image.tmdb.org/t/p/w500{movie.get('poster_path')}" if movie.get('poster_path') else "/static/images/placeholder.jpg",
+                        'backdrop_path': f"https://image.tmdb.org/t/p/original{movie.get('backdrop_path')}" if movie.get('backdrop_path') else None,
+                        'release_date': movie.get('release_date', 'Unknown'),
+                        'vote_average': movie.get('vote_average', 0.0)
+                    }
+                    formatted_movies.append(formatted_movie)
+                except Exception as e:
+                    print(f"Error formatting movie: {e}")
+                    continue
+            
+            return formatted_movies
+        except Exception as e:
+            print(f"Error fetching popular movies: {e}")
+            return []
+
+    def get_popular_series(self, page=1):
+        try:
+            url = f"{self.base_url}/discover/tv"
+            params = {
+                'api_key': self.api_key,
+                'sort_by': 'popularity.desc',
+                'page': page,
+                'language': 'en-US',
+                'include_adult': False,
+                'certification_country': 'US',
+                'certification.lte': 'TV-PG'  # Using TV-PG rating for series
+            }
+            
+            response = requests.get(url, params=params)
+            if response.status_code != 200:
+                print(f"Error from TMDB API: {response.text}")
+                return []
+            
+            data = response.json()
+            formatted_series = []
+            
+            for series in data.get('results', []):
+                try:
+                    # Skip inappropriate content
+                    if not self._is_appropriate_content({
+                        'title': series.get('name', ''),
+                        'overview': series.get('overview', '')
+                    }):
+                        print(f"Filtered out inappropriate series: {series.get('name', 'Unknown')}")
+                        continue
+                        
+                    formatted_series_item = {
+                        'id': series.get('id', 0),
+                        'title': series.get('name', 'Unknown Title'),
+                        'overview': series.get('overview', 'No overview available'),
+                        'poster_path': f"https://image.tmdb.org/t/p/w500{series.get('poster_path')}" if series.get('poster_path') else "/static/images/placeholder.jpg",
+                        'backdrop_path': f"https://image.tmdb.org/t/p/original{series.get('backdrop_path')}" if series.get('backdrop_path') else None,
+                        'first_air_date': series.get('first_air_date', 'Unknown'),
+                        'vote_average': series.get('vote_average', 0.0)
+                    }
+                    formatted_series.append(formatted_series_item)
+                except Exception as e:
+                    print(f"Error formatting series: {e}")
+                    continue
+            
+            return formatted_series
+        except Exception as e:
+            print(f"Error fetching popular series: {e}")
+            return []
 
     def search_movies(self, query, page=1):
-        movies = self.movie.search(query, page=page)
-        return [self._format_movie(movie) for movie in movies]
+        try:
+            url = f"{self.base_url}/search/movie"
+            params = {
+                'api_key': self.api_key,
+                'query': query,
+                'page': page,
+                'language': 'en-US',
+                'include_adult': False,  # Explicitly exclude adult content
+                'certification_country': 'US',
+                'certification.lte': 'PG-13'  # Only include up to PG-13 rated content
+            }
+            
+            response = requests.get(url, params=params)
+            if response.status_code != 200:
+                print(f"Error from TMDB API: {response.text}")
+                return []
+            
+            data = response.json()
+            formatted_movies = []
+            
+            for movie in data.get('results', []):
+                try:
+                    # Skip inappropriate content
+                    if not self._is_appropriate_content(movie):
+                        print(f"Filtered out inappropriate movie: {movie.get('title', 'Unknown')}")
+                        continue
+                        
+                    formatted_movie = {
+                        'id': movie.get('id', 0),
+                        'title': movie.get('title', 'Unknown Title'),
+                        'overview': movie.get('overview', 'No overview available'),
+                        'poster_path': f"https://image.tmdb.org/t/p/w500{movie.get('poster_path')}" if movie.get('poster_path') else "/static/images/placeholder.jpg",
+                        'backdrop_path': f"https://image.tmdb.org/t/p/original{movie.get('backdrop_path')}" if movie.get('backdrop_path') else None,
+                        'release_date': movie.get('release_date', 'Unknown'),
+                        'vote_average': movie.get('vote_average', 0.0)
+                    }
+                    formatted_movies.append(formatted_movie)
+                except Exception as e:
+                    print(f"Error formatting movie: {e}")
+                    continue
+            
+            return formatted_movies
+        except Exception as e:
+            print(f"Error searching movies: {e}")
+            return []
 
     def search_series(self, query, page=1):
-        series = self.tv.search(query, page=page)
-        return [self._format_series(show) for show in series]
+        try:
+            url = f"{self.base_url}/search/tv"
+            params = {
+                'api_key': self.api_key,
+                'query': query,
+                'page': page,
+                'language': 'en-US',
+                'include_adult': False,
+                'certification_country': 'US',
+                'certification.lte': 'TV-PG'  # Using TV-PG rating for series
+            }
+            
+            response = requests.get(url, params=params)
+            if response.status_code != 200:
+                print(f"Error from TMDB API: {response.text}")
+                return []
+            
+            data = response.json()
+            formatted_series = []
+            
+            for series in data.get('results', []):
+                try:
+                    # Skip inappropriate content
+                    if not self._is_appropriate_content({
+                        'title': series.get('name', ''),
+                        'overview': series.get('overview', '')
+                    }):
+                        print(f"Filtered out inappropriate series: {series.get('name', 'Unknown')}")
+                        continue
+                        
+                    formatted_series_item = {
+                        'id': series.get('id', 0),
+                        'title': series.get('name', 'Unknown Title'),
+                        'overview': series.get('overview', 'No overview available'),
+                        'poster_path': f"https://image.tmdb.org/t/p/w500{series.get('poster_path')}" if series.get('poster_path') else "/static/images/placeholder.jpg",
+                        'backdrop_path': f"https://image.tmdb.org/t/p/original{series.get('backdrop_path')}" if series.get('backdrop_path') else None,
+                        'first_air_date': series.get('first_air_date', 'Unknown'),
+                        'vote_average': series.get('vote_average', 0.0)
+                    }
+                    formatted_series.append(formatted_series_item)
+                except Exception as e:
+                    print(f"Error formatting series: {e}")
+                    continue
+            
+            return formatted_series
+        except Exception as e:
+            print(f"Error searching series: {e}")
+            return []
 
     def get_movies_by_genre(self, genre_id, page=1):
-        movies = self.discover.discover_movies({
-            'with_genres': genre_id,
-            'page': page
-        })
-        return [self._format_movie(movie) for movie in movies]
+        try:
+            url = f"{self.base_url}/discover/movie"
+            params = {
+                'api_key': self.api_key,
+                'with_genres': genre_id,
+                'page': page,
+                'language': 'en-US',
+                'include_adult': False,  # Explicitly exclude adult content
+                'certification_country': 'US',
+                'certification.lte': 'PG-13'  # Only include up to PG-13 rated content
+            }
+            
+            response = requests.get(url, params=params)
+            if response.status_code != 200:
+                print(f"Error from TMDB API: {response.text}")
+                return []
+            
+            data = response.json()
+            formatted_movies = []
+            
+            for movie in data.get('results', []):
+                try:
+                    # Skip inappropriate content
+                    if not self._is_appropriate_content(movie):
+                        print(f"Filtered out inappropriate movie: {movie.get('title', 'Unknown')}")
+                        continue
+                        
+                    formatted_movie = {
+                        'id': movie.get('id', 0),
+                        'title': movie.get('title', 'Unknown Title'),
+                        'overview': movie.get('overview', 'No overview available'),
+                        'poster_path': f"https://image.tmdb.org/t/p/w500{movie.get('poster_path')}" if movie.get('poster_path') else "/static/images/placeholder.jpg",
+                        'backdrop_path': f"https://image.tmdb.org/t/p/original{movie.get('backdrop_path')}" if movie.get('backdrop_path') else None,
+                        'release_date': movie.get('release_date', 'Unknown'),
+                        'vote_average': movie.get('vote_average', 0.0)
+                    }
+                    formatted_movies.append(formatted_movie)
+                except Exception as e:
+                    print(f"Error formatting movie: {e}")
+                    continue
+            
+            return formatted_movies
+        except Exception as e:
+            print(f"Error fetching movies by genre: {e}")
+            return []
 
     def get_similar_movies(self, movie_id):
-        movies = self.movie.similar(movie_id)
-        return [self._format_movie(movie) for movie in movies]
+        try:
+            url = f"{self.base_url}/movie/{movie_id}/similar"
+            params = {
+                'api_key': self.api_key,
+                'language': 'en-US',
+                'include_adult': False,  # Explicitly exclude adult content
+                'certification_country': 'US',
+                'certification.lte': 'PG-13'  # Only include up to PG-13 rated content
+            }
+            
+            response = requests.get(url, params=params)
+            if response.status_code != 200:
+                print(f"Error from TMDB API: {response.text}")
+                return []
+            
+            data = response.json()
+            formatted_movies = []
+            
+            for movie in data.get('results', []):
+                try:
+                    # Skip inappropriate content
+                    if not self._is_appropriate_content(movie):
+                        print(f"Filtered out inappropriate movie: {movie.get('title', 'Unknown')}")
+                        continue
+                        
+                    formatted_movie = {
+                        'id': movie.get('id', 0),
+                        'title': movie.get('title', 'Unknown Title'),
+                        'overview': movie.get('overview', 'No overview available'),
+                        'poster_path': f"https://image.tmdb.org/t/p/w500{movie.get('poster_path')}" if movie.get('poster_path') else "/static/images/placeholder.jpg",
+                        'backdrop_path': f"https://image.tmdb.org/t/p/original{movie.get('backdrop_path')}" if movie.get('backdrop_path') else None,
+                        'release_date': movie.get('release_date', 'Unknown'),
+                        'vote_average': movie.get('vote_average', 0.0)
+                    }
+                    formatted_movies.append(formatted_movie)
+                except Exception as e:
+                    print(f"Error formatting movie: {e}")
+                    continue
+            
+            return formatted_movies
+        except Exception as e:
+            print(f"Error fetching similar movies: {e}")
+            return []
 
     def get_genres(self):
         return self.genre.movie_list()
 
+    def _is_appropriate_content(self, movie):
+        """Check if the movie content is appropriate."""
+        # Check title and overview for inappropriate keywords
+        if self.inappropriate_pattern.search(movie.get('title', '')) or \
+           self.inappropriate_pattern.search(movie.get('overview', '')):
+            return False
+        return True
+
     def get_documentaries(self, page=1):
         try:
-            print("DEBUG: Starting get_documentaries")
-            discover = Discover()
-            print("DEBUG: Created Discover instance")
-            
-            # Try using discover_movies with minimal parameters first
-            movies = discover.discover_movies({
+            url = f"{self.base_url}/discover/movie"
+            params = {
+                'api_key': self.api_key,
                 'with_genres': self.DOCUMENTARY_GENRE_ID,
-                'page': page
-            })
-            print(f"DEBUG: Got movies response: {type(movies)}")
+                'sort_by': 'popularity.desc',
+                'page': page,
+                'language': 'en-US',
+                'include_adult': False,  # Explicitly exclude adult content
+                'certification_country': 'US',
+                'certification.lte': 'PG-13'  # Only include up to PG-13 rated content
+            }
             
+            response = requests.get(url, params=params)
+            if response.status_code != 200:
+                print(f"Error from TMDB API: {response.text}")
+                return []
+                
+            data = response.json()
             formatted_docs = []
-            for movie in movies:
-                print(f"DEBUG: Processing movie: {movie.id if hasattr(movie, 'id') else 'No ID'}")
+            
+            for movie in data.get('results', []):
                 try:
-                    # Get full movie details to ensure we have all required data
-                    details = self.movie.details(movie.id)
-                    print(f"DEBUG: Got details for movie {movie.id}")
-                    
+                    # Skip inappropriate content
+                    if not self._is_appropriate_content(movie):
+                        print(f"Filtered out inappropriate content: {movie.get('title', 'Unknown')}")
+                        continue
+                        
                     formatted_doc = {
-                        'id': details.id,
-                        'title': details.title,
-                        'overview': details.overview,
-                        'poster_path': f"https://image.tmdb.org/t/p/w500{details.poster_path}" if details.poster_path else "/static/images/placeholder.jpg",
-                        'backdrop_path': f"https://image.tmdb.org/t/p/original{details.backdrop_path}" if details.backdrop_path else None,
-                        'release_date': getattr(details, 'release_date', 'Unknown'),
-                        'vote_average': getattr(details, 'vote_average', 0.0)
+                        'id': movie.get('id', 0),
+                        'title': movie.get('title', 'Unknown Title'),
+                        'overview': movie.get('overview', 'No overview available'),
+                        'poster_path': f"https://image.tmdb.org/t/p/w500{movie.get('poster_path')}" if movie.get('poster_path') else "/static/images/placeholder.jpg",
+                        'backdrop_path': f"https://image.tmdb.org/t/p/original{movie.get('backdrop_path')}" if movie.get('backdrop_path') else None,
+                        'release_date': movie.get('release_date', 'Unknown'),
+                        'vote_average': movie.get('vote_average', 0.0)
                     }
                     formatted_docs.append(formatted_doc)
-                    print(f"DEBUG: Successfully formatted movie {movie.id}")
                 except Exception as e:
-                    print(f"DEBUG: Error processing movie {movie.id if hasattr(movie, 'id') else 'Unknown'}: {str(e)}")
+                    print(f"Error formatting documentary: {e}")
                     continue
             
-            print(f"DEBUG: Returning {len(formatted_docs)} documentaries")
             return formatted_docs
         except Exception as e:
-            print(f"DEBUG: Top-level error in get_documentaries: {str(e)}")
-            print(f"DEBUG: Error type: {type(e)}")
+            print(f"Error fetching documentaries: {e}")
             return []
 
     def get_documentary_details(self, documentary_id):
-        return self.get_movie_details(documentary_id)
+        try:
+            movie = self.movie.details(documentary_id)
+            
+            # Check if the content is appropriate
+            if not self._is_appropriate_content({
+                'title': getattr(movie, 'title', ''),
+                'overview': getattr(movie, 'overview', '')
+            }):
+                raise Exception("Content not appropriate")
+                
+            return self.get_movie_details(documentary_id)
+        except Exception as e:
+            print(f"Error in get_documentary_details: {e}")
+            raise
 
     def get_trending_documentaries(self):
         try:
-            print("DEBUG: Starting get_trending_documentaries")
-            discover = Discover()
-            print("DEBUG: Created Discover instance")
-            
-            # Try using discover_movies with minimal parameters first
-            movies = discover.discover_movies({
+            url = f"{self.base_url}/discover/movie"
+            params = {
+                'api_key': self.api_key,
                 'with_genres': self.DOCUMENTARY_GENRE_ID,
-                'page': 1
-            })
-            print(f"DEBUG: Got movies response: {type(movies)}")
+                'sort_by': 'popularity.desc',
+                'page': 1,
+                'language': 'en-US',
+                'include_adult': False,  # Explicitly exclude adult content
+                'certification_country': 'US',
+                'certification.lte': 'PG-13'  # Only include up to PG-13 rated content
+            }
             
+            response = requests.get(url, params=params)
+            if response.status_code != 200:
+                print(f"Error from TMDB API: {response.text}")
+                return []
+                
+            data = response.json()
             formatted_docs = []
-            for movie in movies[:8]:
-                print(f"DEBUG: Processing movie: {movie.id if hasattr(movie, 'id') else 'No ID'}")
+            
+            for movie in data.get('results', [])[:8]:
                 try:
-                    # Get full movie details to ensure we have all required data
-                    details = self.movie.details(movie.id)
-                    print(f"DEBUG: Got details for movie {movie.id}")
-                    
+                    # Skip inappropriate content
+                    if not self._is_appropriate_content(movie):
+                        print(f"Filtered out inappropriate content: {movie.get('title', 'Unknown')}")
+                        continue
+                        
                     formatted_doc = {
-                        'id': details.id,
-                        'title': details.title,
-                        'overview': details.overview,
-                        'poster_path': f"https://image.tmdb.org/t/p/w500{details.poster_path}" if details.poster_path else "/static/images/placeholder.jpg",
-                        'backdrop_path': f"https://image.tmdb.org/t/p/original{details.backdrop_path}" if details.backdrop_path else None,
-                        'release_date': getattr(details, 'release_date', 'Unknown'),
-                        'vote_average': getattr(details, 'vote_average', 0.0)
+                        'id': movie.get('id', 0),
+                        'title': movie.get('title', 'Unknown Title'),
+                        'overview': movie.get('overview', 'No overview available'),
+                        'poster_path': f"https://image.tmdb.org/t/p/w500{movie.get('poster_path')}" if movie.get('poster_path') else "/static/images/placeholder.jpg",
+                        'backdrop_path': f"https://image.tmdb.org/t/p/original{movie.get('backdrop_path')}" if movie.get('backdrop_path') else None,
+                        'release_date': movie.get('release_date', 'Unknown'),
+                        'vote_average': movie.get('vote_average', 0.0)
                     }
                     formatted_docs.append(formatted_doc)
-                    print(f"DEBUG: Successfully formatted movie {movie.id}")
                 except Exception as e:
-                    print(f"DEBUG: Error processing movie {movie.id if hasattr(movie, 'id') else 'Unknown'}: {str(e)}")
+                    print(f"Error formatting documentary: {e}")
                     continue
             
-            print(f"DEBUG: Returning {len(formatted_docs)} trending documentaries")
             return formatted_docs
         except Exception as e:
-            print(f"DEBUG: Top-level error in get_trending_documentaries: {str(e)}")
-            print(f"DEBUG: Error type: {type(e)}")
+            print(f"Error fetching trending documentaries: {e}")
             return []
 
     def _format_movie(self, movie):

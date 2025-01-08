@@ -1,15 +1,27 @@
 from flask import Flask, render_template, request, jsonify
 from services.tmdb_service import TMDBService
+from services.news_service import NewsService
 import requests
 import os
 from dotenv import load_dotenv
+from datetime import datetime
 
 # Load environment variables
 load_dotenv()
 
 app = Flask(__name__)
 tmdb_service = TMDBService()
+news_service = NewsService()
 TMDB_API_KEY = os.getenv('TMDB_API_KEY')
+
+@app.template_filter('datetime')
+def format_datetime(value):
+    """Format datetime string to a more readable format."""
+    try:
+        dt = datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%fZ")
+        return dt.strftime("%B %d, %Y")
+    except:
+        return value
 
 @app.route('/')
 def home():
@@ -138,6 +150,33 @@ def documentary_details(documentary_id):
     except Exception as e:
         print(f"Error fetching documentary details: {e}")
         return render_template('error.html', error="Unable to fetch documentary details at this time.")
+
+@app.route('/e-magazines')
+def magazines():
+    try:
+        page = int(request.args.get('page', 1))
+        search_query = request.args.get('q')
+        category = request.args.get('category')
+        
+        if search_query:
+            magazines_data = news_service.search_magazines(search_query, page)
+        else:
+            categories = [category] if category else None
+            magazines_data = news_service.get_top_stories(page, categories)
+        
+        return render_template(
+            'magazines.html',
+            magazines=magazines_data,
+            categories=news_service.get_categories(),
+            error=None
+        )
+    except Exception as e:
+        return render_template(
+            'magazines.html',
+            magazines={'articles': [], 'meta': {}},
+            categories=news_service.get_categories(),
+            error="Error loading magazines. Please try again later."
+        )
 
 @app.route('/api/genres')
 def get_genres():

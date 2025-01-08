@@ -1,0 +1,305 @@
+{% extends "base.html" %}
+
+{% block title %}E-Magazines - TourEye{% endblock %}
+
+{% block extra_css %}
+<style>
+    .hero-section {
+        background-color: #1a1f2e;
+        padding: 4rem 0;
+        color: white;
+    }
+
+    .container {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 0 1.5rem;
+    }
+
+    .section-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 2rem;
+    }
+
+    .magazine-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 2rem;
+        margin-bottom: 4rem;
+    }
+
+    .magazine-card {
+        background: white;
+        border-radius: 1rem;
+        overflow: hidden;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        text-decoration: none;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .magazine-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+
+    .magazine-thumbnail {
+        position: relative;
+        padding-top: 56.25%;  /* 16:9 aspect ratio */
+        flex-shrink: 0;
+    }
+
+    .magazine-thumbnail img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .magazine-content {
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+    }
+
+    .magazine-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 0.5rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .magazine-info {
+        color: #64748b;
+        font-size: 0.875rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .magazine-source {
+        display: flex;
+        align-items: center;
+        color: #64748b;
+        font-size: 0.875rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .magazine-description {
+        color: #64748b;
+        font-size: 0.875rem;
+        line-height: 1.5;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        margin-bottom: 1rem;
+    }
+
+    .magazine-categories {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: auto;
+    }
+
+    .category-tag {
+        background: #f1f5f9;
+        color: #1e293b;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+    }
+
+    .search-bar {
+        margin-bottom: 2rem;
+        display: flex;
+        gap: 1rem;
+    }
+
+    .search-input {
+        flex-grow: 1;
+        padding: 0.75rem 1rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.5rem;
+        font-size: 1rem;
+    }
+
+    .search-button {
+        padding: 0.75rem 1.5rem;
+        background: #e11d48;
+        color: white;
+        border: none;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+
+    .search-button:hover {
+        background: #be123c;
+    }
+
+    .category-filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .category-filter {
+        padding: 0.5rem 1rem;
+        background: #f1f5f9;
+        color: #1e293b;
+        border: none;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .category-filter.active {
+        background: #e11d48;
+        color: white;
+    }
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-top: 2rem;
+    }
+
+    .page-link {
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        background: #f1f5f9;
+        color: #1e293b;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .page-link:hover {
+        background: #e2e8f0;
+    }
+
+    .page-link.active {
+        background: #e11d48;
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <h1 class="text-4xl font-bold mb-4">E-Magazines</h1>
+        <p class="text-gray-300">Stay informed with the latest news and articles</p>
+    </div>
+</section>
+
+<!-- Main Content -->
+<section class="py-16">
+    <div class="container">
+        <!-- Search Bar -->
+        <form class="search-bar" method="GET" action="{{ url_for('magazines') }}">
+            <input type="text" name="q" class="search-input" placeholder="Search magazines..." 
+                   value="{{ request.args.get('q', '') }}">
+            <button type="submit" class="search-button">Search</button>
+        </form>
+
+        <!-- Category Filters -->
+        <div class="category-filters">
+            <a href="{{ url_for('magazines') }}" 
+               class="category-filter {% if not request.args.get('category') %}active{% endif %}">
+                All
+            </a>
+            {% for category in categories %}
+            <a href="{{ url_for('magazines', category=category) }}" 
+               class="category-filter {% if request.args.get('category') == category %}active{% endif %}">
+                {{ category|title }}
+            </a>
+            {% endfor %}
+        </div>
+
+        {% if error %}
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-6" role="alert">
+            <span class="block sm:inline">{{ error }}</span>
+        </div>
+        {% endif %}
+
+        {% if magazines.articles %}
+        <div class="magazine-grid">
+            {% for article in magazines.articles %}
+            <a href="{{ article.url }}" target="_blank" class="magazine-card">
+                <div class="magazine-thumbnail">
+                    {% if article.image_url %}
+                    <img src="{{ article.image_url }}" 
+                         alt="{{ article.title }}"
+                         onerror="this.src='{{ url_for('static', filename='images/placeholder.jpg') }}'">
+                    {% else %}
+                    <img src="{{ url_for('static', filename='images/placeholder.jpg') }}" 
+                         alt="{{ article.title }}">
+                    {% endif %}
+                </div>
+                <div class="magazine-content">
+                    <h3 class="magazine-title">{{ article.title }}</h3>
+                    <div class="magazine-source">
+                        <span>{{ article.source }}</span>
+                        <span class="mx-2">•</span>
+                        <span>{{ article.published_at|datetime }}</span>
+                    </div>
+                    <p class="magazine-description">{{ article.description or article.snippet }}</p>
+                    {% if article.categories %}
+                    <div class="magazine-categories">
+                        {% for category in article.categories %}
+                        <span class="category-tag">{{ category|title }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if magazines.meta.found > magazines.meta.limit %}
+        <div class="pagination">
+            {% if magazines.meta.page > 1 %}
+            <a href="{{ url_for('magazines', page=magazines.meta.page-1, q=request.args.get('q', ''), category=request.args.get('category', '')) }}" 
+               class="page-link">Previous</a>
+            {% endif %}
+            
+            {% set total_pages = ((magazines.meta.found + magazines.meta.limit - 1) // magazines.meta.limit) %}
+            {% set start = magazines.meta.page - 2 if magazines.meta.page > 2 else 1 %}
+            {% set end = magazines.meta.page + 2 if magazines.meta.page + 2 <= total_pages else total_pages %}
+            
+            {% for page_num in range(start, end + 1) %}
+            <a href="{{ url_for('magazines', page=page_num, q=request.args.get('q', ''), category=request.args.get('category', '')) }}" 
+               class="page-link {% if page_num == magazines.meta.page %}active{% endif %}">
+                {{ page_num }}
+            </a>
+            {% endfor %}
+            
+            {% if magazines.meta.page < total_pages %}
+            <a href="{{ url_for('magazines', page=magazines.meta.page+1, q=request.args.get('q', ''), category=request.args.get('category', '')) }}" 
+               class="page-link">Next</a>
+            {% endif %}
+        </div>
+        {% endif %}
+        {% else %}
+        <div class="text-center py-8">
+            <p class="text-gray-600">No magazines found. Try different search terms or categories.</p>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
