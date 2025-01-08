@@ -1,73 +1,122 @@
 {% extends "base.html" %}
 
-{% block title %}Welcome{% endblock %}
+{% block title %}Home - TourEye{% endblock %}
 
 {% block extra_css %}
+<!-- Add Swiper's CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.css">
 <style>
-    /* Hero Section */
+    /* Hero Section Styles */
     .hero-section {
         position: relative;
-        height: 85vh;
-        background-color: #1a1f2e;
+        height: 70vh;
+        min-height: 600px;
+        color: white;
+        overflow: hidden;
         width: 100vw;
         margin-left: calc(-50vw + 50%);
         margin-right: calc(-50vw + 50%);
-        overflow: hidden;
+    }
+
+    .swiper {
+        width: 100%;
+        height: 100%;
+    }
+
+    .swiper-slide {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        background-size: cover;
+        background-position: center;
+    }
+
+    .slide-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1;
     }
 
     .hero-content {
-        max-width: 1280px;
-        margin: 0 auto;
-        padding: 0 1.5rem;
+        position: relative;
+        z-index: 2;
         height: 100%;
         display: flex;
         flex-direction: column;
         justify-content: center;
+        padding: 2rem;
+        max-width: 1280px;
+        margin: 0 auto;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: opacity 0.8s ease, transform 0.8s ease;
     }
 
-    .hero-title {
-        font-size: 4.5rem;
-        line-height: 1.1;
-        font-weight: 700;
-        color: #ffffff;
-        margin-bottom: 1.5rem;
-        letter-spacing: -0.02em;
+    .swiper-slide-active .hero-content {
+        opacity: 1;
+        transform: translateY(0);
     }
 
     .hero-subtitle {
         font-size: 1.25rem;
-        color: #94a3b8;
-        margin-bottom: 2.5rem;
-        font-weight: 400;
+        color: #fdfdfd;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 2px;
     }
 
-    .explore-btn {
+    .hero-title {
+        font-size: 3.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        line-height: 1.2;
+        max-width: 800px;
+    }
+
+    .hero-description {
+        font-size: 1.25rem;
+        max-width: 600px;
+        margin-bottom: 2rem;
+        line-height: 1.6;
+        color: rgba(255, 255, 255, 0.9);
+    }
+
+    .hero-button {
         display: inline-flex;
         align-items: center;
         padding: 1rem 2rem;
-        background-color: #e11d48;
+        background: #e11d48;
         color: white;
-        font-weight: 500;
-        border-radius: 9999px;
-        transition: all 0.2s ease;
-        font-size: 1rem;
+        text-decoration: none;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
         width: fit-content;
     }
 
-    .explore-btn:hover {
-        background-color: #be123c;
-        transform: translateY(-1px);
+    .hero-button:hover {
+        background: #be123c;
+        transform: translateY(-2px);
     }
 
-    .explore-btn svg {
-        margin-left: 0.5rem;
-        width: 1.25rem;
-        height: 1.25rem;
-        transition: transform 0.2s ease;
+    .swiper-button-next,
+    .swiper-button-prev {
+        color: white !important;
     }
 
-    .explore-btn:hover svg {
-        transform: translateX(4px);
+    .swiper-pagination-bullet {
+        background: white !important;
+        opacity: 0.5;
+    }
+
+    .swiper-pagination-bullet-active {
+        opacity: 1;
+        background: #e11d48 !important;
     }
 
     /* Categories Section */
@@ -90,9 +139,15 @@
     }
 
     .category-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
+        display: flex;
+        flex-direction: column;
         gap: 2rem;
+    }
+
+    .category-row {
+        display: flex;
+        gap: 2rem;
+        width: 100%;
     }
 
     .category-card {
@@ -105,6 +160,13 @@
         flex-direction: column;
         align-items: flex-start;
         text-decoration: none;
+        flex: 1;
+    }
+
+    /* Make bottom row cards wider */
+    .category-card.wide {
+        flex: 1;
+        min-height: 200px;
     }
 
     .category-card:hover {
@@ -141,10 +203,24 @@
         line-height: 1.5;
     }
 
+    @media (max-width: 768px) {
+        .category-row {
+            flex-direction: column;
+        }
+
+        .category-card {
+            width: 100%;
+        }
+
+        .category-card.wide {
+            min-height: auto;
+        }
+    }
+
     /* Trending Section */
     .trending-section {
+        padding: 4rem 0;
         background-color: #f8fafc;
-        padding: 5rem 0;
         width: 100vw;
         margin-left: calc(-50vw + 50%);
         margin-right: calc(-50vw + 50%);
@@ -153,46 +229,64 @@
     .trending-container {
         max-width: 1280px;
         margin: 0 auto;
-        padding: 0 1.5rem;
+        padding: 0 2rem;
+    }
+
+    .content-card {
+        background: white;
+        border-radius: 1.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        overflow: hidden;
+    }
+
+    .trending-content {
+        padding: 2rem;
     }
 
     .trending-header {
         display: flex;
-        align-items: center;
         justify-content: space-between;
-        margin-bottom: 3rem;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+
+    .section-title {
+        font-size: 1.875rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0;
     }
 
     .view-more {
         display: flex;
         align-items: center;
+        gap: 0.5rem;
         color: #e11d48;
-        font-weight: 500;
         text-decoration: none;
+        font-weight: 600;
         transition: all 0.2s ease;
     }
 
     .view-more:hover {
-        transform: translateX(4px);
+        color: #be123c;
     }
 
     .view-more svg {
         width: 1.25rem;
         height: 1.25rem;
-        margin-left: 0.5rem;
     }
 
-    .movie-grid {
+    .content-grid {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
-        gap: 2rem;
+        gap: 1.5rem;
     }
 
-    .movie-card {
+    .media-card {
         background: white;
         border-radius: 1rem;
         overflow: hidden;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         transition: all 0.3s ease;
         text-decoration: none;
         height: 100%;
@@ -200,52 +294,112 @@
         flex-direction: column;
     }
 
-    .movie-thumbnail {
-        position: relative;
-        padding-top: 56.25%;
-        flex-shrink: 0;
+    .media-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 20px rgba(0, 0, 0, 0.1);
     }
 
-    .movie-thumbnail img {
+    .media-thumbnail {
+        position: relative;
+        padding-top: 56.25%;
+        overflow: hidden;
+    }
+
+    .media-thumbnail img {
         position: absolute;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
         object-fit: cover;
+        transition: transform 0.3s ease;
     }
 
-    .movie-content {
+    .media-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .play-icon {
+        color: white;
+        font-size: 2.5rem;
+        transform: scale(0.8);
+        transition: transform 0.3s ease;
+    }
+
+    .media-card:hover .media-overlay {
+        opacity: 1;
+    }
+
+    .media-card:hover .play-icon {
+        transform: scale(1);
+    }
+
+    .media-card:hover img {
+        transform: scale(1.05);
+    }
+
+    .media-content {
         padding: 1.5rem;
+        flex-grow: 1;
         display: flex;
         flex-direction: column;
-        flex-grow: 1;
     }
 
-    .movie-title {
+    .media-title {
         font-size: 1.25rem;
         font-weight: 600;
         color: #1e293b;
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.75rem;
         display: -webkit-box;
         -webkit-line-clamp: 1;
         -webkit-box-orient: vertical;
         overflow: hidden;
     }
 
-    .movie-description {
+    .media-description {
         color: #64748b;
         font-size: 0.875rem;
         line-height: 1.5;
         display: -webkit-box;
-        -webkit-line-clamp: 2;
+        -webkit-line-clamp: 3;
         -webkit-box-orient: vertical;
         overflow: hidden;
     }
 
-    /* Add spacing between sections */
-    .section-spacing {
-        margin-top: 5rem;
+    .content-divider {
+        height: 1px;
+        background: linear-gradient(to right, transparent, #e2e8f0, transparent);
+        margin: 0 2rem;
+    }
+
+    @media (max-width: 1024px) {
+        .content-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 640px) {
+        .content-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .trending-content {
+            padding: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+        }
     }
 </style>
 {% endblock %}
@@ -253,15 +407,92 @@
 {% block content %}
 <!-- Hero Section -->
 <section class="hero-section">
-    <div class="hero-content">
-        <h1 class="hero-title">Experience Tanzania's Journey</h1>
-        <p class="hero-subtitle">Your ultimate entertainment companion for SGR travels</p>
-        <a href="/movies" class="explore-btn">
-            Start Exploring
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
-            </svg>
-        </a>
+    <div class="swiper">
+        <div class="swiper-wrapper">
+            <!-- Slide 1 -->
+            <div class="swiper-slide" style="background-image: url('{{ url_for('static', filename='images/bg1.png') }}')">
+                <div class="slide-overlay"></div>
+                <div class="hero-content">
+                    <span class="hero-subtitle">Welcome to TourEye</span>
+                    <h1 class="hero-title">Your Ultimate Entertainment Companion</h1>
+                    <p class="hero-description">
+                        Experience a world of entertainment at your fingertips while traveling on Tanzania's SGR.
+                    </p>
+                    <a href="/movies" class="hero-button">Start Exploring</a>
+                </div>
+            </div>
+
+            <!-- Slide 2 -->
+            <div class="swiper-slide" style="background-image: url('{{ url_for('static', filename='images/bg2.png') }}')">
+                <div class="slide-overlay"></div>
+                <div class="hero-content">
+                    <span class="hero-subtitle">SGR Experience</span>
+                    <h1 class="hero-title">Travel in Style with Premium Entertainment</h1>
+                    <p class="hero-description">
+                        Enjoy your journey with our curated collection of movies, series, and documentaries.
+                    </p>
+                    <a href="/series" class="hero-button">Discover Series</a>
+                </div>
+            </div>
+
+            <!-- Slide 3 -->
+            <div class="swiper-slide" style="background-image: url('{{ url_for('static', filename='images/bg3.png') }}')">
+                <div class="slide-overlay"></div>
+                <div class="hero-content">
+                    <span class="hero-subtitle">Tanzania's Heritage</span>
+                    <h1 class="hero-title">Explore Our Rich Cultural History</h1>
+                    <p class="hero-description">
+                        Immerse yourself in captivating documentaries about Tanzania's diverse culture and heritage.
+                    </p>
+                    <a href="/documentaries" class="hero-button">Watch Documentaries</a>
+                </div>
+            </div>
+
+            <!-- Slide 4 -->
+            <div class="swiper-slide" style="background-image: url('{{ url_for('static', filename='images/bg4.png') }}')">
+                <div class="slide-overlay"></div>
+                <div class="hero-content">
+                    <span class="hero-subtitle">Modern Transit</span>
+                    <h1 class="hero-title">Experience Modern Railway Entertainment</h1>
+                    <p class="hero-description">
+                        Transform your SGR journey with state-of-the-art entertainment options.
+                    </p>
+                    <a href="/movies" class="hero-button">Browse Movies</a>
+                </div>
+            </div>
+
+            <!-- Slide 5 -->
+            <div class="swiper-slide" style="background-image: url('{{ url_for('static', filename='images/bg5.png') }}')">
+                <div class="slide-overlay"></div>
+                <div class="hero-content">
+                    <span class="hero-subtitle">Family Entertainment</span>
+                    <h1 class="hero-title">Something for Everyone</h1>
+                    <p class="hero-description">
+                        From kids' shows to family movies, make your SGR journey memorable for the whole family.
+                    </p>
+                    <a href="/series" class="hero-button">Family Content</a>
+                </div>
+            </div>
+
+            <!-- Slide 6 -->
+            <div class="swiper-slide" style="background-image: url('{{ url_for('static', filename='images/bg6.png') }}')">
+                <div class="slide-overlay"></div>
+                <div class="hero-content">
+                    <span class="hero-subtitle">Stay Updated</span>
+                    <h1 class="hero-title">Latest News & Entertainment</h1>
+                    <p class="hero-description">
+                        Keep up with current events through our e-magazine collection while enjoying your SGR journey.
+                    </p>
+                    <a href="/e-magazines" class="hero-button">Read Magazines</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Navigation -->
+        <div class="swiper-button-next"></div>
+        <div class="swiper-button-prev"></div>
+        <!-- Add Pagination -->
+        <div class="swiper-pagination"></div>
     </div>
 </section>
 
@@ -270,88 +501,159 @@
     <div class="categories-container">
         <h2 class="section-title">Entertainment Categories</h2>
         <div class="category-grid">
-            <a href="/movies" class="category-card">
-                <div class="category-icon">
-                    <i class="fas fa-film"></i>
-                </div>
-                <h3 class="category-title">Movies</h3>
-                <p class="category-description">Latest blockbusters and classics</p>
-            </a>
+            <!-- Top Row - 3 cards -->
+            <div class="category-row">
+                <a href="/movies" class="category-card">
+                    <div class="category-icon">
+                        <i class="fas fa-film"></i>
+                    </div>
+                    <h3 class="category-title">Movies</h3>
+                    <p class="category-description">Latest blockbusters and classics</p>
+                </a>
 
-            <a href="/series" class="category-card">
-                <div class="category-icon">
-                    <i class="fas fa-tv"></i>
-                </div>
-                <h3 class="category-title">Series</h3>
-                <p class="category-description">Binge-worthy shows</p>
-            </a>
+                <a href="/series" class="category-card">
+                    <div class="category-icon">
+                        <i class="fas fa-tv"></i>
+                    </div>
+                    <h3 class="category-title">Series</h3>
+                    <p class="category-description">Binge-worthy shows</p>
+                </a>
 
-            <a href="/documentaries" class="category-card">
-                <div class="category-icon">
-                    <i class="fas fa-video"></i>
-                </div>
-                <h3 class="category-title">Documentaries</h3>
-                <p class="category-description">Explore Tanzania's heritage</p>
-            </a>
+                <a href="/documentaries" class="category-card">
+                    <div class="category-icon">
+                        <i class="fas fa-video"></i>
+                    </div>
+                    <h3 class="category-title">Documentaries</h3>
+                    <p class="category-description">Explore Tanzania's heritage</p>
+                </a>
+            </div>
+
+            <!-- Bottom Row - 2 cards -->
+            <div class="category-row">
+                <a href="/e-magazines" class="category-card wide">
+                    <div class="category-icon">
+                        <i class="fas fa-newspaper"></i>
+                    </div>
+                    <h3 class="category-title">E-Magazines</h3>
+                    <p class="category-description">Stay informed with latest news and articles</p>
+                </a>
+
+                <a href="/games" class="category-card wide">
+                    <div class="category-icon">
+                        <i class="fas fa-gamepad"></i>
+                    </div>
+                    <h3 class="category-title">Games</h3>
+                    <p class="category-description">Fun entertainment for all ages</p>
+                </a>
+            </div>
         </div>
     </div>
 </section>
 
-<!-- Trending Movies -->
+<!-- Trending Content Section -->
 <section class="trending-section">
     <div class="trending-container">
-        <div class="trending-header">
-            <h2 class="section-title">Trending Movies</h2>
-            <a href="/movies" class="view-more">
-                More
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
-                </svg>
-            </a>
-        </div>
-        <div class="movie-grid">
-            {% for movie in featured_movies[:3] %}
-            <a href="/movie/{{ movie.id }}" class="movie-card">
-                <div class="movie-thumbnail">
-                    <img src="https://image.tmdb.org/t/p/w500{{ movie.backdrop_path }}" 
-                         alt="{{ movie.title }}">
+        <div class="content-card">
+            <!-- Trending Movies -->
+            <div class="trending-content">
+                <div class="trending-header">
+                    <h2 class="section-title">Trending Movies</h2>
+                    <a href="/movies" class="view-more">
+                        More
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                        </svg>
+                    </a>
                 </div>
-                <div class="movie-content">
-                    <h3 class="movie-title">{{ movie.title }}</h3>
-                    <p class="movie-description">{{ movie.overview }}</p>
+                <div class="content-grid">
+                    {% for movie in featured_movies[:3] %}
+                    <a href="/movie/{{ movie.id }}" class="media-card">
+                        <div class="media-thumbnail">
+                            <img src="https://image.tmdb.org/t/p/w500{{ movie.backdrop_path }}" 
+                                 alt="{{ movie.title }}"
+                                 onerror="this.src='{{ url_for('static', filename='images/placeholder.jpg') }}'">
+                            <div class="media-overlay">
+                                <span class="play-icon">▶</span>
+                            </div>
+                        </div>
+                        <div class="media-content">
+                            <h3 class="media-title">{{ movie.title }}</h3>
+                            <p class="media-description">{{ movie.overview }}</p>
+                        </div>
+                    </a>
+                    {% endfor %}
                 </div>
-            </a>
-            {% endfor %}
-        </div>
-    </div>
-</section>
+            </div>
 
-<!-- Trending Series -->
-<section class="trending-section section-spacing">
-    <div class="trending-container">
-        <div class="trending-header">
-            <h2 class="section-title">Trending Series</h2>
-            <a href="/series" class="view-more">
-                More
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
-                </svg>
-            </a>
-        </div>
-        <div class="movie-grid">
-            {% for series in trending_series %}
-            <a href="/series/{{ series.id }}" class="movie-card">
-                <div class="movie-thumbnail">
-                    <img src="https://image.tmdb.org/t/p/w500{{ series.backdrop_path }}" 
-                         alt="{{ series.name }}">
+            <!-- Content Divider -->
+            <div class="content-divider"></div>
+
+            <!-- Trending Series -->
+            <div class="trending-content">
+                <div class="trending-header">
+                    <h2 class="section-title">Trending Series</h2>
+                    <a href="/series" class="view-more">
+                        More
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                        </svg>
+                    </a>
                 </div>
-                <div class="movie-content">
-                    <h3 class="movie-title">{{ series.name }}</h3>
-                    <p class="movie-description">{{ series.overview }}</p>
+                <div class="content-grid">
+                    {% for series in trending_series[:3] %}
+                    <a href="/series/{{ series.id }}" class="media-card">
+                        <div class="media-thumbnail">
+                            <img src="https://image.tmdb.org/t/p/w500{{ series.backdrop_path }}" 
+                                 alt="{{ series.name }}"
+                                 onerror="this.src='{{ url_for('static', filename='images/placeholder.jpg') }}'">
+                            <div class="media-overlay">
+                                <span class="play-icon">▶</span>
+                            </div>
+                        </div>
+                        <div class="media-content">
+                            <h3 class="media-title">{{ series.name }}</h3>
+                            <p class="media-description">{{ series.overview }}</p>
+                        </div>
+                    </a>
+                    {% endfor %}
                 </div>
-            </a>
-            {% endfor %}
+            </div>
         </div>
     </div>
 </section>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Add Swiper JS -->
+<script src="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.js"></script>
+<script>
+    const swiper = new Swiper('.swiper', {
+        // Enable loop
+        loop: true,
+        
+        // Enable autoplay
+        autoplay: {
+            delay: 5000,
+            disableOnInteraction: false,
+        },
+        
+        // Enable fade effect
+        effect: 'fade',
+        fadeEffect: {
+            crossFade: true
+        },
+        
+        // Navigation arrows
+        navigation: {
+            nextEl: '.swiper-button-next',
+            prevEl: '.swiper-button-prev',
+        },
+        
+        // Pagination
+        pagination: {
+            el: '.swiper-pagination',
+            clickable: true,
+        },
+    });
+</script>
 {% endblock %}
