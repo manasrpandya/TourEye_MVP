@@ -1,156 +1,120 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en" class="h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TourEye - {% block title %}{% endblock %}</title>
+    <title>{% block title %}{% endblock %} - Tour Eye</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
     <script>
         tailwind.config = {
-            darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
-                        primary: '#0f172a',
-                        secondary: '#1e293b',
-                        accent: '#ef4444',
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'system-ui', 'sans-serif'],
-                    },
+                        primary: '#1e293b',
+                        secondary: '#f8fafc',
+                        accent: '#e11d48',
+                        trending: '#f2f2f2'
+                    }
                 }
             }
         }
     </script>
     <style>
-        html, body {
-            background-color: #0f172a;
-            min-height: 100vh;
-            overflow-x: hidden;
-            margin: 0;
-            padding: 0;
-        }
-        body {
-            display: flex;
-            flex-direction: column;
-        }
-        main {
-            flex: 1 0 auto;
-        }
         .content-container {
             max-width: 1280px;
             margin: 0 auto;
-            padding: 0 1rem;
-            width: 100%;
+            padding: 0 1.5rem;
         }
-        @media (min-width: 640px) {
-            .content-container {
-                padding: 0 1.5rem;
-            }
+        
+        .nav-link {
+            @apply text-gray-700 hover:text-accent transition-colors duration-200;
+            font-size: 15px;
         }
-        @media (min-width: 1024px) {
-            .content-container {
-                padding: 0 2rem;
-            }
+        
+        .nav-link.active {
+            @apply text-accent;
+        }
+
+        .vertical-divider {
+            width: 1px;
+            height: 40px;
+            background: #e5e7eb;
+            margin: 0 2rem;
+        }
+        
+        .logo-container img {
+            height: 40px;
+            width: auto;
         }
     </style>
+    {% block extra_css %}{% endblock %}
 </head>
-<body class="bg-gradient-to-br from-primary to-secondary text-gray-100">
+<body class="flex flex-col min-h-screen bg-white">
     <!-- Navigation -->
-    <nav class="bg-secondary/80 backdrop-blur-sm sticky top-0 z-50 border-b border-gray-800">
+    <nav class="sticky top-0 z-50 bg-white border-b border-gray-100">
         <div class="content-container">
-            <div class="flex items-center justify-between h-16">
-                <!-- Logo and Main Nav -->
-                <div class="flex items-center gap-8">
-                    <a href="/" class="text-2xl font-bold text-white hover:text-accent transition-colors">
-                        TourEye
-                    </a>
-                    <div class="hidden md:flex items-center gap-4">
-                        <a href="/" class="px-3 py-2 rounded-md text-sm font-medium hover:text-accent transition-colors">
-                            Home
-                        </a>
-                        <a href="/movies" class="px-3 py-2 rounded-md text-sm font-medium hover:text-accent transition-colors">
-                            Movies
-                        </a>
-                        <div class="relative group">
-                            <button class="px-3 py-2 rounded-md text-sm font-medium hover:text-accent transition-colors">
-                                Genres
-                                <i class="fas fa-chevron-down ml-1 text-xs"></i>
-                            </button>
-                            <div class="absolute left-0 z-50 hidden group-hover:block w-48 mt-1">
-                                <div class="bg-secondary rounded-lg shadow-xl border border-gray-800 py-1">
-                                    <div id="genresList" class="py-1">
-                                        <!-- Genres populated by JavaScript -->
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+            <div class="flex items-center h-20">
+                <!-- Left side with logos -->
+                <div class="flex items-center">
+                    <div class="logo-container">
+                        <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="Tour Eye Logo">
+                    </div>
+                    <div class="vertical-divider"></div>
+                    <div class="logo-container">
+                        <img src="{{ url_for('static', filename='images/sgr.png') }}" alt="SGR Logo">
                     </div>
                 </div>
 
-                <!-- Search Bar -->
-                <div class="flex-1 max-w-lg px-8">
-                    <form id="searchForm" class="relative">
-                        <input type="search" id="searchInput" 
-                            class="w-full bg-gray-900/50 rounded-full pl-4 pr-10 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent/50 border border-gray-800" 
-                            placeholder="Search movies...">
-                        <button type="submit" class="absolute right-0 top-0 mt-2 mr-4">
-                            <i class="fas fa-search text-gray-400 hover:text-accent transition-colors"></i>
-                        </button>
-                    </form>
-                </div>
-
-                <!-- Mobile Menu Button -->
-                <div class="md:hidden">
-                    <button type="button" class="text-gray-400 hover:text-white">
-                        <i class="fas fa-bars"></i>
-                    </button>
+                <!-- Right side navigation -->
+                <div class="flex items-center ml-auto space-x-8">
+                    <a href="/" class="nav-link {% if request.endpoint == 'home' %}active{% endif %}">Home</a>
+                    <a href="/movies" class="nav-link {% if request.endpoint == 'movies' %}active{% endif %}">Movies</a>
+                    <a href="/series" class="nav-link {% if request.endpoint == 'series' %}active{% endif %}">Series</a>
+                    <a href="/documentaries" class="nav-link {% if request.endpoint == 'documentaries' %}active{% endif %}">Documentaries</a>
+                    <a href="/e-magazines" class="nav-link {% if request.endpoint == 'magazines' %}active{% endif %}">E-Magazines</a>
+                    <a href="/games" class="nav-link {% if request.endpoint == 'games' %}active{% endif %}">Games</a>
                 </div>
             </div>
         </div>
     </nav>
 
     <!-- Main Content -->
-    <main>
+    <main class="flex-grow">
         <div class="content-container py-8">
             {% block content %}{% endblock %}
         </div>
     </main>
 
     <!-- Footer -->
-    <footer class="bg-secondary/80 backdrop-blur-sm border-t border-gray-800 py-6 mt-auto">
+    <footer class="bg-white border-t border-gray-100 py-6">
         <div class="content-container">
-            <div class="text-center text-sm text-gray-400">
-                <p>&copy; 2024 TourEye Entertainment. All rights reserved.</p>
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4 text-sm text-gray-600">
+                    <span class="flex items-center">
+                        <i class="fas fa-wifi mr-2"></i>
+                        Connected
+                    </span>
+                    <span class="flex items-center">
+                        <i class="fas fa-battery-full mr-2"></i>
+                        100%
+                    </span>
+                </div>
+                <div class="flex items-center space-x-6 text-sm">
+                    <a href="/about" class="text-gray-600 hover:text-accent transition-colors">About</a>
+                    <a href="/help" class="text-gray-600 hover:text-accent transition-colors">Help</a>
+                    <div class="flex items-center space-x-2">
+                        <a href="?lang=en" class="text-gray-600 hover:text-accent transition-colors">EN</a>
+                        <span class="text-gray-300">|</span>
+                        <a href="?lang=sw" class="text-gray-600 hover:text-accent transition-colors">SW</a>
+                    </div>
+                </div>
             </div>
         </div>
     </footer>
 
-    <script>
-        // Fetch and populate genres dropdown
-        fetch('/api/genres')
-            .then(response => response.json())
-            .then(genres => {
-                const genresList = document.getElementById('genresList');
-                genres.forEach(genre => {
-                    const a = document.createElement('a');
-                    a.href = `/movies?genre=${encodeURIComponent(genre.name)}`;
-                    a.className = 'block px-4 py-2 text-sm text-gray-300 hover:bg-accent hover:text-white transition-colors';
-                    a.textContent = genre.name;
-                    genresList.appendChild(a);
-                });
-            });
-
-        // Handle search form submission
-        document.getElementById('searchForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const query = document.getElementById('searchInput').value.trim();
-            if (query) {
-                window.location.href = `/movies?search=${encodeURIComponent(query)}`;
-            }
-        });
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>

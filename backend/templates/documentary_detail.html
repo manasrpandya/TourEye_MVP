@@ -1,0 +1,223 @@
+{% extends "base.html" %}
+
+{% block title %}{{ documentary.title }} - TourEye{% endblock %}
+
+{% block extra_css %}
+<style>
+    .hero-section {
+        position: relative;
+        height: 70vh;
+        background-size: cover;
+        background-position: center;
+        color: white;
+        display: flex;
+        align-items: center;
+    }
+
+    .hero-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to right, rgba(0,0,0,0.9) 30%, rgba(0,0,0,0.4));
+    }
+
+    .container {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 0 1.5rem;
+        position: relative;
+        z-index: 10;
+    }
+
+    .documentary-title {
+        font-size: 3rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+    }
+
+    .documentary-tagline {
+        font-size: 1.5rem;
+        color: #e2e8f0;
+        margin-bottom: 2rem;
+        font-style: italic;
+    }
+
+    .documentary-meta {
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+        margin-bottom: 2rem;
+        color: #e2e8f0;
+    }
+
+    .documentary-rating {
+        display: flex;
+        align-items: center;
+        color: #eab308;
+    }
+
+    .documentary-rating i {
+        margin-right: 0.5rem;
+    }
+
+    .documentary-overview {
+        max-width: 600px;
+        line-height: 1.8;
+        margin-bottom: 2rem;
+    }
+
+    .section-title {
+        font-size: 1.875rem;
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 2rem;
+    }
+
+    .cast-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 2rem;
+        margin-bottom: 4rem;
+    }
+
+    .cast-card {
+        background: white;
+        border-radius: 0.75rem;
+        overflow: hidden;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+    }
+
+    .cast-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .cast-image {
+        width: 100%;
+        padding-top: 150%;
+        position: relative;
+    }
+
+    .cast-image img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .cast-info {
+        padding: 1rem;
+    }
+
+    .cast-name {
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 0.25rem;
+    }
+
+    .cast-character {
+        font-size: 0.875rem;
+        color: #64748b;
+    }
+
+    .trailer-section {
+        background: #f8fafc;
+        padding: 4rem 0;
+    }
+
+    .trailer-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .trailer-wrapper {
+        position: relative;
+        padding-bottom: 56.25%;
+        height: 0;
+        overflow: hidden;
+        border-radius: 0.75rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    .trailer-wrapper iframe {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section" style="background-image: url('{{ documentary.backdrop_path }}')">
+    <div class="hero-overlay"></div>
+    <div class="container">
+        <h1 class="documentary-title">{{ documentary.title }}</h1>
+        {% if documentary.tagline %}
+        <p class="documentary-tagline">{{ documentary.tagline }}</p>
+        {% endif %}
+        <div class="documentary-meta">
+            <div class="documentary-rating">
+                <i class="fas fa-star"></i>
+                {{ "%.1f"|format(documentary.vote_average) }}
+            </div>
+            <div>Release Date: {{ documentary.release_date }}</div>
+            {% if documentary.runtime %}
+            <div>{{ documentary.runtime }} minutes</div>
+            {% endif %}
+        </div>
+        <p class="documentary-overview">{{ documentary.overview }}</p>
+        {% if documentary.trailer_key %}
+        <a href="https://www.youtube.com/watch?v={{ documentary.trailer_key }}" target="_blank" class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg inline-flex items-center">
+            <i class="fas fa-play mr-2"></i>
+            Watch Trailer
+        </a>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Cast Section -->
+<section class="py-16">
+    <div class="container">
+        <h2 class="section-title">Cast</h2>
+        <div class="cast-grid">
+            {% for actor in cast %}
+            <div class="cast-card">
+                <div class="cast-image">
+                    {% if actor.profile_path %}
+                    <img src="https://image.tmdb.org/t/p/w300{{ actor.profile_path }}" alt="{{ actor.name }}">
+                    {% else %}
+                    <img src="{{ url_for('static', filename='images/placeholder.jpg') }}" alt="{{ actor.name }}">
+                    {% endif %}
+                </div>
+                <div class="cast-info">
+                    <div class="cast-name">{{ actor.name }}</div>
+                    <div class="cast-character">{{ actor.character }}</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+{% if documentary.trailer_key %}
+<!-- Trailer Section -->
+<section class="trailer-section">
+    <div class="container">
+        <h2 class="section-title text-center mb-8">Watch Trailer</h2>
+        <div class="trailer-container">
+            <div class="trailer-wrapper">
+                <iframe src="https://www.youtube.com/embed/{{ documentary.trailer_key }}" 
+                        frameborder="0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        allowfullscreen>
+                </iframe>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+{% endblock %}

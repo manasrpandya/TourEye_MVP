@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+
+{% block title %}Series - TourEye{% endblock %}
+
+{% block extra_css %}
+<style>
+    .hero-section {
+        background-color: #1a1f2e;
+        padding: 4rem 0;
+        color: white;
+    }
+
+    .container {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 0 1.5rem;
+    }
+
+    .section-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 2rem;
+    }
+
+    .series-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 2rem;
+        margin-bottom: 4rem;
+    }
+
+    .series-card {
+        background: white;
+        border-radius: 1rem;
+        overflow: hidden;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        text-decoration: none;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .series-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+
+    .series-thumbnail {
+        position: relative;
+        padding-top: 150%;
+        flex-shrink: 0;
+    }
+
+    .series-thumbnail img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .series-content {
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+    }
+
+    .series-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 0.5rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .series-info {
+        color: #64748b;
+        font-size: 0.875rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .series-rating {
+        display: flex;
+        align-items: center;
+        color: #eab308;
+        font-size: 0.875rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .series-rating i {
+        margin-right: 0.25rem;
+    }
+
+    .series-overview {
+        color: #64748b;
+        font-size: 0.875rem;
+        line-height: 1.5;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <h1 class="text-4xl font-bold mb-4">TV Series</h1>
+        <p class="text-gray-300">Discover the best TV series to watch during your journey</p>
+    </div>
+</section>
+
+<!-- Trending Series -->
+<section class="py-16">
+    <div class="container">
+        <h2 class="section-title">Trending This Week</h2>
+        <div class="series-grid">
+            {% for series in trending_series[:6] %}
+            <a href="{{ url_for('series_detail', series_id=series.id) }}" class="series-card">
+                <div class="series-thumbnail">
+                    <img src="https://image.tmdb.org/t/p/w500{{ series.poster_path }}" 
+                         alt="{{ series.name }}">
+                </div>
+                <div class="series-content">
+                    <h3 class="series-title">{{ series.name }}</h3>
+                    <div class="series-info">
+                        First Air Date: {{ series.first_air_date }}
+                    </div>
+                    <div class="series-rating">
+                        <i class="fas fa-star"></i>
+                        {{ "%.1f"|format(series.vote_average) }}
+                    </div>
+                    <p class="series-overview">{{ series.overview }}</p>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Popular Series -->
+<section class="py-16 bg-gray-50">
+    <div class="container">
+        <h2 class="section-title">Popular Series</h2>
+        <div class="series-grid">
+            {% for series in popular_series %}
+            <a href="{{ url_for('series_detail', series_id=series.id) }}" class="series-card">
+                <div class="series-thumbnail">
+                    <img src="https://image.tmdb.org/t/p/w500{{ series.poster_path }}" 
+                         alt="{{ series.name }}">
+                </div>
+                <div class="series-content">
+                    <h3 class="series-title">{{ series.name }}</h3>
+                    <div class="series-info">
+                        First Air Date: {{ series.first_air_date }}
+                    </div>
+                    <div class="series-rating">
+                        <i class="fas fa-star"></i>
+                        {{ "%.1f"|format(series.vote_average) }}
+                    </div>
+                    <p class="series-overview">{{ series.overview }}</p>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

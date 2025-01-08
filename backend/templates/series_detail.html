@@ -1,0 +1,253 @@
+{% extends "base.html" %}
+
+{% block title %}{{ series.name }} - TourEye{% endblock %}
+
+{% block extra_css %}
+<style>
+    .hero-section {
+        position: relative;
+        height: 70vh;
+        background-size: cover;
+        background-position: center;
+        color: white;
+        display: flex;
+        align-items: center;
+    }
+
+    .hero-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to right, rgba(0,0,0,0.9) 30%, rgba(0,0,0,0.4));
+    }
+
+    .container {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 0 1.5rem;
+        position: relative;
+        z-index: 10;
+    }
+
+    .series-title {
+        font-size: 3rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+    }
+
+    .series-meta {
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+        margin-bottom: 2rem;
+        color: #e2e8f0;
+    }
+
+    .series-rating {
+        display: flex;
+        align-items: center;
+        color: #eab308;
+    }
+
+    .series-rating i {
+        margin-right: 0.5rem;
+    }
+
+    .series-overview {
+        max-width: 600px;
+        line-height: 1.8;
+        margin-bottom: 2rem;
+    }
+
+    .section-title {
+        font-size: 1.875rem;
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 2rem;
+    }
+
+    .cast-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 2rem;
+        margin-bottom: 4rem;
+    }
+
+    .cast-card {
+        background: white;
+        border-radius: 0.75rem;
+        overflow: hidden;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+    }
+
+    .cast-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .cast-image {
+        width: 100%;
+        padding-top: 150%;
+        position: relative;
+    }
+
+    .cast-image img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .cast-info {
+        padding: 1rem;
+    }
+
+    .cast-name {
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 0.25rem;
+    }
+
+    .cast-character {
+        font-size: 0.875rem;
+        color: #64748b;
+    }
+
+    .season-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 2rem;
+    }
+
+    .season-card {
+        background: white;
+        border-radius: 0.75rem;
+        overflow: hidden;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+    }
+
+    .season-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .season-image {
+        width: 100%;
+        padding-top: 150%;
+        position: relative;
+    }
+
+    .season-image img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .season-info {
+        padding: 1.5rem;
+    }
+
+    .season-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 0.5rem;
+    }
+
+    .season-meta {
+        font-size: 0.875rem;
+        color: #64748b;
+        margin-bottom: 1rem;
+    }
+
+    .season-overview {
+        font-size: 0.875rem;
+        color: #64748b;
+        line-height: 1.5;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section" style="background-image: url('{{ series.backdrop_path }}')">
+    <div class="hero-overlay"></div>
+    <div class="container">
+        <h1 class="series-title">{{ series.name }}</h1>
+        <div class="series-meta">
+            <div class="series-rating">
+                <i class="fas fa-star"></i>
+                {{ "%.1f"|format(series.vote_average) }}
+            </div>
+            <div>First Air Date: {{ series.first_air_date }}</div>
+            <div>{{ series.number_of_seasons }} Season{% if series.number_of_seasons != 1 %}s{% endif %}</div>
+        </div>
+        <p class="series-overview">{{ series.overview }}</p>
+        {% if series.trailer_key %}
+        <a href="https://www.youtube.com/watch?v={{ series.trailer_key }}" target="_blank" class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg inline-flex items-center">
+            <i class="fas fa-play mr-2"></i>
+            Watch Trailer
+        </a>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Cast Section -->
+<section class="py-16">
+    <div class="container">
+        <h2 class="section-title">Cast</h2>
+        <div class="cast-grid">
+            {% for actor in cast %}
+            <div class="cast-card">
+                <div class="cast-image">
+                    {% if actor.profile_path %}
+                    <img src="https://image.tmdb.org/t/p/w300{{ actor.profile_path }}" alt="{{ actor.name }}">
+                    {% else %}
+                    <img src="{{ url_for('static', filename='images/placeholder.jpg') }}" alt="{{ actor.name }}">
+                    {% endif %}
+                </div>
+                <div class="cast-info">
+                    <div class="cast-name">{{ actor.name }}</div>
+                    <div class="cast-character">{{ actor.character }}</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Seasons Section -->
+<section class="py-16 bg-gray-50">
+    <div class="container">
+        <h2 class="section-title">Seasons</h2>
+        <div class="season-grid">
+            {% for season in series.seasons %}
+            <div class="season-card">
+                <div class="season-image">
+                    {% if season.poster_path %}
+                    <img src="https://image.tmdb.org/t/p/w300{{ season.poster_path }}" alt="{{ season.name }}">
+                    {% else %}
+                    <img src="{{ url_for('static', filename='images/placeholder.jpg') }}" alt="{{ season.name }}">
+                    {% endif %}
+                </div>
+                <div class="season-info">
+                    <h3 class="season-title">{{ season.name }}</h3>
+                    <div class="season-meta">
+                        {{ season.episode_count }} Episodes • {{ season.air_date }}
+                    </div>
+                    <p class="season-overview">{{ season.overview }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

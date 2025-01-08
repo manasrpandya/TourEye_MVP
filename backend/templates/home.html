@@ -1,99 +1,357 @@
-
 {% extends "base.html" %}
 
 {% block title %}Welcome{% endblock %}
 
-{% block content %}
-<!-- Hero Section -->
-<div class="relative overflow-hidden rounded-xl bg-secondary mb-12">
-    <div class="relative z-10 px-6 py-16 sm:px-12 lg:py-24">
-        <div class="text-center">
-            <h1 class="text-4xl font-bold text-white sm:text-6xl mb-6">Welcome to Tour Eye</h1>
-            <p class="text-lg text-gray-300 mb-10">Your premium railway entertainment system. Enjoy the latest movies, TV shows, and more during your journey.</p>
-            <a href="/movies" class="inline-block bg-accent hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg transition-colors">
-                Explore Movies
-            </a>
-        </div>
-    </div>
-    <div class="absolute inset-0 bg-gradient-to-b from-black/50 to-black/20"></div>
-</div>
-
-<!-- Featured Movies Section -->
-<section class="mb-16">
-    <h2 class="text-3xl font-bold mb-8">Featured Movies</h2>
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {% for movie in featured_movies %}
-        <a href="/movie/{{ movie.id }}" class="group">
-            <div class="relative bg-secondary rounded-lg overflow-hidden shadow-lg transform hover:scale-105 transition duration-300">
-                <img src="https://image.tmdb.org/t/p/w500{{ movie.poster_path }}" 
-                     alt="{{ movie.title }}" 
-                     class="w-full h-[400px] object-cover">
-                <div class="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <div class="absolute bottom-0 left-0 right-0 p-4">
-                        <h3 class="text-lg font-semibold text-white group-hover:text-accent transition-colors">{{ movie.title }}</h3>
-                        <p class="text-sm text-gray-300 line-clamp-2 mt-2">{{ movie.overview }}</p>
-                        <div class="flex items-center justify-between mt-2">
-                            <div class="flex items-center">
-                                <i class="fas fa-star text-yellow-400 mr-1"></i>
-                                <span class="text-white">{{ "%.1f"|format(movie.vote_average) }}</span>
-                            </div>
-                            <span class="text-gray-300">{{ movie.release_date[:4] }}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </a>
-        {% endfor %}
-    </div>
-</section>
-
-<!-- Browse by Genre -->
-<section>
-    <h2 class="text-3xl font-bold mb-8">Browse by Genre</h2>
-    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-        {% for genre in genres %}
-        <a href="/movies?genre={{ genre.name }}" class="group">
-            <div class="bg-secondary hover:bg-accent rounded-lg p-4 text-center transition-colors duration-300 h-full flex flex-col items-center justify-center">
-                <i class="fas fa-film text-3xl mb-3 text-gray-400 group-hover:text-white transition-colors"></i>
-                <h3 class="text-sm font-medium group-hover:text-white">{{ genre.name }}</h3>
-            </div>
-        </a>
-        {% endfor %}
-    </div>
-</section>
-{% endblock %}
-
 {% block extra_css %}
 <style>
-    .hero {
-        padding: 4rem 0;
-        background-color: var(--secondary-color);
-        border-radius: 15px;
+    /* Hero Section */
+    .hero-section {
+        position: relative;
+        height: 85vh;
+        background-color: #1a1f2e;
+        width: 100vw;
+        margin-left: calc(-50vw + 50%);
+        margin-right: calc(-50vw + 50%);
+        overflow: hidden;
+    }
+
+    .hero-content {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 0 1.5rem;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .hero-title {
+        font-size: 4.5rem;
+        line-height: 1.1;
+        font-weight: 700;
+        color: #ffffff;
+        margin-bottom: 1.5rem;
+        letter-spacing: -0.02em;
+    }
+
+    .hero-subtitle {
+        font-size: 1.25rem;
+        color: #94a3b8;
+        margin-bottom: 2.5rem;
+        font-weight: 400;
+    }
+
+    .explore-btn {
+        display: inline-flex;
+        align-items: center;
+        padding: 1rem 2rem;
+        background-color: #e11d48;
+        color: white;
+        font-weight: 500;
+        border-radius: 9999px;
+        transition: all 0.2s ease;
+        font-size: 1rem;
+        width: fit-content;
+    }
+
+    .explore-btn:hover {
+        background-color: #be123c;
+        transform: translateY(-1px);
+    }
+
+    .explore-btn svg {
+        margin-left: 0.5rem;
+        width: 1.25rem;
+        height: 1.25rem;
+        transition: transform 0.2s ease;
+    }
+
+    .explore-btn:hover svg {
+        transform: translateX(4px);
+    }
+
+    /* Categories Section */
+    .categories-section {
+        padding: 5rem 0;
+        background-color: white;
+    }
+
+    .categories-container {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 0 1.5rem;
+    }
+
+    .section-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #1e293b;
         margin-bottom: 3rem;
     }
 
-    .movie-poster {
-        height: 300px;
-        object-fit: cover;
+    .category-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 2rem;
     }
 
     .category-card {
-        transition: transform 0.3s ease;
-        cursor: pointer;
+        background: white;
+        border-radius: 1rem;
+        padding: 2rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        text-decoration: none;
     }
 
     .category-card:hover {
         transform: translateY(-5px);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+
+    .category-icon {
+        width: 3.5rem;
+        height: 3.5rem;
+        background: rgba(225, 29, 72, 0.1);
+        border-radius: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .category-icon i {
+        color: #e11d48;
+        font-size: 1.5rem;
+    }
+
+    .category-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 0.75rem;
+    }
+
+    .category-description {
+        color: #64748b;
+        font-size: 1rem;
+        line-height: 1.5;
+    }
+
+    /* Trending Section */
+    .trending-section {
+        background-color: #f8fafc;
+        padding: 5rem 0;
+        width: 100vw;
+        margin-left: calc(-50vw + 50%);
+        margin-right: calc(-50vw + 50%);
+    }
+
+    .trending-container {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 0 1.5rem;
+    }
+
+    .trending-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 3rem;
+    }
+
+    .view-more {
+        display: flex;
+        align-items: center;
+        color: #e11d48;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .view-more:hover {
+        transform: translateX(4px);
+    }
+
+    .view-more svg {
+        width: 1.25rem;
+        height: 1.25rem;
+        margin-left: 0.5rem;
+    }
+
+    .movie-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 2rem;
+    }
+
+    .movie-card {
+        background: white;
+        border-radius: 1rem;
+        overflow: hidden;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        text-decoration: none;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .movie-thumbnail {
+        position: relative;
+        padding-top: 56.25%;
+        flex-shrink: 0;
+    }
+
+    .movie-thumbnail img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .movie-content {
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
     }
 
     .movie-title {
-        white-space: nowrap;
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 0.5rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 1;
+        -webkit-box-orient: vertical;
         overflow: hidden;
-        text-overflow: ellipsis;
     }
 
-    .genres {
-        margin-top: 0.5rem;
+    .movie-description {
+        color: #64748b;
+        font-size: 0.875rem;
+        line-height: 1.5;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    /* Add spacing between sections */
+    .section-spacing {
+        margin-top: 5rem;
     }
 </style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="hero-content">
+        <h1 class="hero-title">Experience Tanzania's Journey</h1>
+        <p class="hero-subtitle">Your ultimate entertainment companion for SGR travels</p>
+        <a href="/movies" class="explore-btn">
+            Start Exploring
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+            </svg>
+        </a>
+    </div>
+</section>
+
+<!-- Entertainment Categories -->
+<section class="categories-section">
+    <div class="categories-container">
+        <h2 class="section-title">Entertainment Categories</h2>
+        <div class="category-grid">
+            <a href="/movies" class="category-card">
+                <div class="category-icon">
+                    <i class="fas fa-film"></i>
+                </div>
+                <h3 class="category-title">Movies</h3>
+                <p class="category-description">Latest blockbusters and classics</p>
+            </a>
+
+            <a href="/series" class="category-card">
+                <div class="category-icon">
+                    <i class="fas fa-tv"></i>
+                </div>
+                <h3 class="category-title">Series</h3>
+                <p class="category-description">Binge-worthy shows</p>
+            </a>
+
+            <a href="/documentaries" class="category-card">
+                <div class="category-icon">
+                    <i class="fas fa-video"></i>
+                </div>
+                <h3 class="category-title">Documentaries</h3>
+                <p class="category-description">Explore Tanzania's heritage</p>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Trending Movies -->
+<section class="trending-section">
+    <div class="trending-container">
+        <div class="trending-header">
+            <h2 class="section-title">Trending Movies</h2>
+            <a href="/movies" class="view-more">
+                More
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                </svg>
+            </a>
+        </div>
+        <div class="movie-grid">
+            {% for movie in featured_movies[:3] %}
+            <a href="/movie/{{ movie.id }}" class="movie-card">
+                <div class="movie-thumbnail">
+                    <img src="https://image.tmdb.org/t/p/w500{{ movie.backdrop_path }}" 
+                         alt="{{ movie.title }}">
+                </div>
+                <div class="movie-content">
+                    <h3 class="movie-title">{{ movie.title }}</h3>
+                    <p class="movie-description">{{ movie.overview }}</p>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Trending Series -->
+<section class="trending-section section-spacing">
+    <div class="trending-container">
+        <div class="trending-header">
+            <h2 class="section-title">Trending Series</h2>
+            <a href="/series" class="view-more">
+                More
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                </svg>
+            </a>
+        </div>
+        <div class="movie-grid">
+            {% for series in trending_series %}
+            <a href="/series/{{ series.id }}" class="movie-card">
+                <div class="movie-thumbnail">
+                    <img src="https://image.tmdb.org/t/p/w500{{ series.backdrop_path }}" 
+                         alt="{{ series.name }}">
+                </div>
+                <div class="movie-content">
+                    <h3 class="movie-title">{{ series.name }}</h3>
+                    <p class="movie-description">{{ series.overview }}</p>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</section>
 {% endblock %}
