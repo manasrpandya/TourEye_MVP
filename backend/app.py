@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, session
 from services.tmdb_service import TMDBService
 from services.news_service import NewsService
 import requests
@@ -10,9 +10,24 @@ from datetime import datetime
 load_dotenv()
 
 app = Flask(__name__)
+app.secret_key = os.getenv('SECRET_KEY', 'your-secret-key-here')  
+
+# Initialize services
 tmdb_service = TMDBService()
 news_service = NewsService()
 TMDB_API_KEY = os.getenv('TMDB_API_KEY')
+
+# Language dictionary
+LANGUAGES = {
+    'en': 'English',
+    'sw': 'Swahili'
+}
+
+@app.before_request
+def before_request():
+    # Set default language if not set
+    if 'language' not in session:
+        session['language'] = 'English'
 
 @app.template_filter('datetime')
 def format_datetime(value):
@@ -190,6 +205,29 @@ def games():
 def get_genres():
     genres = tmdb_service.get_genres()
     return jsonify([{'id': genre.id, 'name': genre.name} for genre in genres])
+
+@app.route('/set-language', methods=['POST'])
+def set_language():
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'status': 'error', 'message': 'No data provided'}), 400
+        
+        language = data.get('language')
+        if language not in ['en', 'sw']:
+            return jsonify({'status': 'error', 'message': 'Invalid language'}), 400
+        
+        # Set the language in session
+        session['language'] = LANGUAGES[language]
+        session.modified = True
+        
+        return jsonify({
+            'status': 'success',
+            'message': f'Language changed to {LANGUAGES[language]}',
+            'language': LANGUAGES[language]
+        })
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
