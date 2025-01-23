@@ -401,6 +401,170 @@
             font-size: 1.5rem;
         }
     }
+
+    /* SGR Section Styles */
+    .sgr-section {
+        padding: 6rem 0;
+        background: linear-gradient(to bottom, #ffffff, #f8fafc);
+        width: 100vw;
+        margin-left: calc(-50vw + 50%);
+        margin-right: calc(-50vw + 50%);
+    }
+
+    .sgr-container {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 0 2rem;
+        justify-content: center;
+    }
+
+    .sgr-content {
+        display: flex;
+        gap: 4rem;
+        align-items: center;
+    }
+
+    .sgr-text {
+        flex: 1;
+        max-width: 600px; /* Control text section width */
+    }
+
+    .sgr-images {
+        flex: 1;
+        max-width: 500px; /* Control image width */
+    }
+
+    .image-item.large {
+        height: 400px;
+        border-radius: 1rem;
+        overflow: hidden;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    .image-item.large img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+
+    .image-item.large img:hover {
+        transform: scale(1.05);
+    }
+
+    .sgr-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 1.5rem;
+        line-height: 1.2;
+    }
+
+    .sgr-description {
+        color: #64748b;
+        font-size: 1.25rem;
+        line-height: 1.6;
+        margin-bottom: 2rem;
+    }
+
+    .sgr-features {
+        display: flex;
+        gap: 2rem;
+    }
+
+    .feature {
+        flex: 1;
+        text-align: center;
+    }
+
+    .feature-icon {
+        font-size: 2.5rem;
+        color: #e11d48;
+        margin-bottom: 0.75rem;
+    }
+
+    .feature h3 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 0.5rem;
+    }
+
+    .feature p {
+        color: #64748b;
+        font-size: 1rem;
+        line-height: 1.5;
+    }
+
+    .image-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .image-item {
+        position: relative;
+        overflow: hidden;
+        border-radius: 1rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    .image-item img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+
+    .image-item:not(.large) {
+        height: 200px;
+    }
+
+    .image-item img:hover {
+        transform: scale(1.05);
+    }
+
+    @media (max-width: 1024px) {
+        .sgr-content {
+            flex-direction: column;
+        }
+
+        .sgr-text {
+            max-width: 100%;
+        }
+
+        .sgr-images {
+            max-width: 100%;
+            margin-top: 2rem;
+        }
+
+        .image-item.large {
+            height: 300px;
+        }
+
+        .sgr-features {
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .feature {
+            max-width: 300px;
+        }
+    }
+
+    @media (max-width: 640px) {
+        .sgr-title {
+            font-size: 2rem;
+        }
+
+        .sgr-description {
+            font-size: 1.125rem;
+        }
+
+        .image-item.large {
+            height: 250px;
+        }
+    }
 </style>
 {% endblock %}
 
@@ -507,6 +671,48 @@
         <div class="swiper-button-prev"></div>
         <!-- Add Pagination -->
         <div class="swiper-pagination"></div>
+    </div>
+</section>
+
+<!-- SGR Information Section -->
+<section class="sgr-section">
+    <div class="sgr-container">
+        <div class="sgr-content">
+            <div class="sgr-text">
+                <h2 class="sgr-title">Experience Tanzania's Modern Railway</h2>
+                <p class="sgr-description">The Standard Gauge Railway (SGR) represents Tanzania's commitment to modern, efficient transportation. This state-of-the-art railway system connects major cities with comfort, speed, and reliability.</p>
+                <div class="sgr-features">
+                    <div class="feature">
+                        <div class="feature-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <h3>Fast Travel</h3>
+                        <p>160km/h top speed for efficient journeys</p>
+                    </div>
+                    <div class="feature">
+                        <div class="feature-icon">
+                            <i class="fas fa-couch"></i>
+                        </div>
+                        <h3>Comfort</h3>
+                        <p>Modern coaches with premium amenities</p>
+                    </div>
+                    <div class="feature">
+                        <div class="feature-icon">
+                            <i class="fas fa-map-marked-alt"></i>
+                        </div>
+                        <h3>Connectivity</h3>
+                        <p>Linking major cities across Tanzania</p>
+                    </div>
+                </div>
+            </div>
+            <div class="sgr-images">
+                <div class="image-grid">
+                    <div class="image-item large">
+                        <img src="{{ url_for('static', filename='images/mama_samia.png') }}" alt="SGR Main">
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </section>
 
