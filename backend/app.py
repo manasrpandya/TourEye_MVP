@@ -178,6 +178,14 @@ def magazines():
             error="Error loading magazines. Please try again later."
         )
 
+@app.route('/games')
+def games():
+    try:
+        return render_template('games.html')
+    except Exception as e:
+        print(f"Error loading games page: {e}")
+        return render_template('error.html', error="Unable to load games page at this time.")
+
 @app.route('/api/genres')
 def get_genres():
     genres = tmdb_service.get_genres()
